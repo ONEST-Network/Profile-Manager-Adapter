@@ -21,11 +21,11 @@ type WorkerProfile struct {
 }
 
 type Credential struct {
-	Name      string `bson:"name"`
-	URL       string `bson:"url"`
-	Type      string `bson:"type"`
-	ShortDesc string `bson:"short_desc"`
-	LongDesc  string `bson:"long_desc"`
+	Name      string `bson:"name" json:"name"`
+	URL       string `bson:"url" json:"url"`
+	Type      string `bson:"type" json:"type"`
+	ShortDesc string `bson:"short_desc" json:"short_desc"`
+	LongDesc  string `bson:"long_desc" json:"long_desc"`
 }
 
 // Location represents the location of a job
@@ -68,22 +68,23 @@ const (
 	JobRoleHelper JobRole = "Helper"
 	JobRoleWelder JobRole = "Welder"
 	JobRoleDriver JobRole = "Driver"
+	JobRoleCashier JobRole = "Cashier"
 )
 
 // Experience represents past work experience
 type Experience struct {
-	JobTitle    string `bson:"job_title" json:"jobTitle"`
+	JobTitle    string `bson:"job_title" json:"job_title"`
 	Company     string `bson:"company" json:"company"`
-	StartDate   string `bson:"start_date" json:"startDate"`
-	EndDate     string `bson:"end_date" json:"endDate"`
-	DocumentURL string `bson:"document_url" json:"documentUrl"`
+	StartDate   string `bson:"start_date" json:"start_date"`
+	EndDate     string `bson:"end_date" json:"end_date"`
+	DocumentURL string `bson:"document_url" json:"document_url"`
 }
 
 // Certification represents qualifications and certifications
 type Certification struct {
 	Name        string `bson:"name" json:"name"`
-	IssuedBy    string `bson:"issued_by" json:"issuedBy"`
-	IssuedDate  string `bson:"issued_date" json:"issuedDate"`
-	ExpiryDate  string `bson:"expiry_date" json:"expiryDate"`
-	DocumentURL string `bson:"document_url" json:"documentUrl"`
+	IssuedBy    string `bson:"issued_by" json:"issued_by"`
+	IssuedDate  string `bson:"issued_date" json:"issued_date"`
+	ExpiryDate  string `bson:"expiry_date" json:"expiry_date"`
+	DocumentURL string `bson:"document_url" json:"document_url"`
 }

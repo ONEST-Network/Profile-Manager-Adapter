@@ -8,7 +8,6 @@ type SeekerSearchPayload struct {
 	EmploymentType string         `json:"employment_type,omitempty"`
 	Category       string         `json:"category,omitempty"`
 	Cache          bool           `json:"cache,omitempty"`
-	LLM            bool           `json:"llm,omitempty"`
 }
 
 type SeekerLocation struct {

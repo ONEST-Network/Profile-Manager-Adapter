@@ -155,6 +155,16 @@ func WithdrawJobApplication(clients *clients.Clients) gin.HandlerFunc {
 BPP APIs
 **/
 
+// @Summary	Search jobs
+// @Description	Search jobs
+// @Tags Worker
+// @Accept		json
+// @Produce		json
+// @Param request body searchrequest.SeekerSearchPayload true "request body"
+// @Success 200 {object} searchresponse.SearchResponse
+// @Failure 500 {object} string
+// @Router	/search	[post]
+
 func (h *OnestBPPHandler) Search() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var payload searchrequest.SeekerSearchPayload
@@ -164,12 +174,10 @@ func (h *OnestBPPHandler) Search() gin.HandlerFunc {
 		}
         // Store transaction ID and message ID in worker profile
         if payload.WorkerID != "" {
-            // Get MongoDB collection where responses are stored
-            logrus.Infof("search response client: %+v", h.onestService.Clients.SearchReponseClient)
-            
             parsedRequest, transaction_id, err := builders.BuildBPPSearchJobsRequest(payload)
             if err != nil {
                 logrus.Errorf("Failed to parse search job request, %v", err)
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
             // Create a new document in the SearchResponseClient collection
@@ -186,7 +194,8 @@ func (h *OnestBPPHandler) Search() gin.HandlerFunc {
             )
             if err != nil {
                 logrus.Errorf("Failed to cache search response in Redis for transaction_id %s: %v", transaction_id, err)
-                // Continue execution as Redis is just a cache layer
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                return
             }
 
             // Insert the document into the collection
@@ -213,6 +222,7 @@ func (h *OnestBPPHandler) Search() gin.HandlerFunc {
             logrus.Printf("Parsed Seeker Search Request: %+v\n", parsedRequest)
             _, err = h.onestService.Search(c.Request.Context(), parsedRequest)
             if err != nil {
+                logrus.Errorf("Failed to send search request to ONEST Network: %v", err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
@@ -240,7 +250,7 @@ func (h *OnestBPPHandler) Search() gin.HandlerFunc {
                         )
                         if err != nil {
                             logrus.Errorf("Failed to get search response from MongoDB: %v", err)
-                            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get search response"})
+                            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                             // Reset Redis status to prevent duplicate processing
                             if err := h.onestService.Clients.RedisClient.Set(transaction_id, "", 0); err != nil {
                                 logrus.Warnf("Failed to reset Redis status for transaction_id %s: %v", transaction_id, err)
@@ -306,7 +316,7 @@ func (h *OnestBPPHandler) Select() gin.HandlerFunc {
                 err = h.onestService.Clients.SearchReponseClient.CreateSearchJobResponse(&selectJobResponse)
                 if err != nil {
                     logrus.Errorf("Failed to create select response document: %v", err)
-                    c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create select response"})
+                    c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                     return
                 }
 
@@ -314,6 +324,7 @@ func (h *OnestBPPHandler) Select() gin.HandlerFunc {
                 parsedRequest, err := builders.BuildBPPSelectJobRequest(payload, workerTransactionId, workerMessageId, payload.BppID, payload.BppURI)
                 if err != nil {
                     logrus.Errorf("Failed to parse select job request, %v", err)
+                    c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                     return
                 }
                 updateQuery := bson.D{{Key: "id", Value: payload.WorkerID}}
@@ -334,6 +345,7 @@ func (h *OnestBPPHandler) Select() gin.HandlerFunc {
             parsedRequest, err := builders.BuildBPPSelectJobRequest(payload, workerTransactionId, workerMessageId, payload.BppID, payload.BppURI)
             if err != nil {
                 logrus.Errorf("Failed to parse select job request, %v", err)
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
 
@@ -346,7 +358,7 @@ func (h *OnestBPPHandler) Select() gin.HandlerFunc {
             )
             if err != nil {
                 logrus.Errorf("Failed to cache select response in Redis for transaction_id %s: %v", worker.TransactionID, err)
-                // Continue execution as Redis is just a cache layer
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
             }
 
             logrus.Printf("Parsed Seeker Select Request: %+v\n", parsedRequest)
@@ -354,6 +366,7 @@ func (h *OnestBPPHandler) Select() gin.HandlerFunc {
 
             _, err = h.onestService.Select(c.Request.Context(), parsedRequest)
             if err != nil {
+                logrus.Errorf("Failed to send select request to ONEST Network: %v", err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
@@ -381,7 +394,7 @@ func (h *OnestBPPHandler) Select() gin.HandlerFunc {
                         )
                         if err != nil {
                             logrus.Errorf("Failed to get select response from MongoDB: %v", err)
-                            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get select response"})
+                            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                             // Reset Redis status to prevent duplicate processing
                             if err := h.onestService.Clients.RedisClient.Set(worker.TransactionID, "", 0); err != nil {
                                 logrus.Warnf("Failed to reset Redis status for transaction_id %s: %v", worker.TransactionID, err)
@@ -435,6 +448,7 @@ func (h *OnestBPPHandler) Init() gin.HandlerFunc {
             parsedRequest, err := builders.BuildBPPInitJobRequest(payload, worker.TransactionID, worker.MessageID, payload.BppID, payload.BppURI, worker)
             if err != nil {
                 logrus.Errorf("Failed to parse init job request, %v", err)
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
 
@@ -446,11 +460,13 @@ func (h *OnestBPPHandler) Init() gin.HandlerFunc {
             )
             if err != nil {
                 logrus.Errorf("Failed to cache init response in Redis for transaction_id %s: %v", worker.TransactionID, err)
-                // Continue execution as Redis is just a cache layer
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                return
             }
             logrus.Printf("Parsed Seeker Init Request: %+v\n", parsedRequest)
             _, err = h.onestService.Init(c.Request.Context(), parsedRequest)
             if err != nil {
+                logrus.Errorf("Failed to send init request to ONEST Network: %v", err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
@@ -478,7 +494,7 @@ func (h *OnestBPPHandler) Init() gin.HandlerFunc {
                         )
                         if err != nil {
                             logrus.Errorf("Failed to get init response from MongoDB: %v", err)
-                            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get init response"})
+                            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                             // Reset Redis status to prevent duplicate processing
                             if err := h.onestService.Clients.RedisClient.Set(worker.TransactionID, "", 0); err != nil {
                                 logrus.Warnf("Failed to reset Redis status for transaction_id %s: %v", worker.TransactionID, err)
@@ -496,7 +512,7 @@ func (h *OnestBPPHandler) Init() gin.HandlerFunc {
                             return
                         }
                         
-                        c.JSON(http.StatusNotFound, gin.H{"error": "No job application sent"})
+                        c.JSON(http.StatusNotFound, gin.H{"error": "No job application found"})
                         // Reset Redis status to prevent duplicate processing
                         if err := h.onestService.Clients.RedisClient.Set(worker.TransactionID, "", 0); err != nil {
                             logrus.Warnf("Failed to reset Redis status for transaction_id %s: %v", worker.TransactionID, err)
@@ -532,6 +548,7 @@ func (h *OnestBPPHandler) Confirm() gin.HandlerFunc {
             parsedRequest, err := builders.BuildBPPConfirmJobRequest(payload, worker.TransactionID, worker.MessageID, payload.BppID, payload.BppURI, worker)
             if err != nil {
                 logrus.Errorf("Failed to parse confirm job request, %v", err)
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
             updateQuery := bson.D{{Key: "id", Value: payload.WorkerID}}
@@ -552,12 +569,14 @@ func (h *OnestBPPHandler) Confirm() gin.HandlerFunc {
             )
             if err != nil {
                 logrus.Errorf("Failed to cache confirm response in Redis for transaction_id %s: %v", worker.TransactionID, err)
-                // Continue execution as Redis is just a cache layer
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                return
             }
             logrus.Printf("Parsed Seeker Confirm Request: %+v\n", parsedRequest)
 
             _, err = h.onestService.Confirm(c.Request.Context(), parsedRequest)
             if err != nil {
+                logrus.Errorf("Failed to send confirm request to ONEST Network: %v", err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
@@ -584,7 +603,7 @@ func (h *OnestBPPHandler) Confirm() gin.HandlerFunc {
                         )
                         if err != nil {
                             logrus.Errorf("Failed to get confirm response from MongoDB: %v", err)
-                            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get confirm response"})
+                            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                             // Reset Redis status to prevent duplicate processing
                             if err := h.onestService.Clients.RedisClient.Set(worker.TransactionID, "", 0); err != nil {
                                 logrus.Warnf("Failed to reset Redis status for transaction_id %s: %v", worker.TransactionID, err)
@@ -602,7 +621,7 @@ func (h *OnestBPPHandler) Confirm() gin.HandlerFunc {
                             return
                         }
                         
-                        c.JSON(http.StatusNotFound, gin.H{"error": "No job application confirmed"})
+                        c.JSON(http.StatusNotFound, gin.H{"error": "No job application found to be confirmed"})
                         // Reset Redis status to prevent duplicate processing
                         if err := h.onestService.Clients.RedisClient.Set(worker.TransactionID, "", 0); err != nil {
                             logrus.Warnf("Failed to reset Redis status for transaction_id %s: %v", worker.TransactionID, err)
@@ -639,6 +658,7 @@ func (h *OnestBPPHandler) Status() gin.HandlerFunc {
             parsedRequest, err := builders.BuildBPPStatusJobRequest(payload, payload.BppID, payload.BppURI, worker)
             if err != nil {
                 logrus.Errorf("Failed to parse status job request, %v", err)
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
             // Cache the initial status response in Redis
@@ -649,11 +669,12 @@ func (h *OnestBPPHandler) Status() gin.HandlerFunc {
             )
             if err != nil {
                 logrus.Errorf("Failed to cache status response in Redis for transaction_id %s: %v", worker.TransactionID, err)
-                // Continue execution as Redis is just a cache layer
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
             }
             logrus.Printf("Parsed Seeker Status Request: %+v\n", parsedRequest)
             _, err = h.onestService.Status(c.Request.Context(), parsedRequest)
             if err != nil {
+                logrus.Errorf("Failed to send status request to ONEST Network: %v", err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
@@ -680,7 +701,7 @@ func (h *OnestBPPHandler) Status() gin.HandlerFunc {
                         )
                         if err != nil {
                             logrus.Errorf("Failed to get status response from MongoDB: %v", err)
-                            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get status response"})
+                            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                             // Reset Redis status to prevent duplicate processing
                             if err := h.onestService.Clients.RedisClient.Set(worker.TransactionID, "", 0); err != nil {
                                 logrus.Warnf("Failed to reset Redis status for transaction_id %s: %v", worker.TransactionID, err)
@@ -734,6 +755,7 @@ func (h *OnestBPPHandler) Cancel() gin.HandlerFunc {
             parsedRequest, err := builders.BuildBPPCancelJobRequest(payload, payload.BppID, payload.BppURI, worker)
             if err != nil {
                 logrus.Errorf("Failed to parse cancel job request, %v", err)
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
             // Cache the initial init response in Redis
@@ -744,11 +766,12 @@ func (h *OnestBPPHandler) Cancel() gin.HandlerFunc {
             )
             if err != nil {
                 logrus.Errorf("Failed to cache cancel response in Redis for transaction_id %s: %v", worker.TransactionID, err)
-                // Continue execution as Redis is just a cache layer
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
             }
             logrus.Printf("Parsed Seeker Cancel Request: %+v\n", parsedRequest)
             _, err = h.onestService.Cancel(c.Request.Context(), parsedRequest)
             if err != nil {
+                logrus.Errorf("Failed to send cancel request to ONEST Network: %v", err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
@@ -775,7 +798,7 @@ func (h *OnestBPPHandler) Cancel() gin.HandlerFunc {
                         )
                         if err != nil {
                             logrus.Errorf("Failed to get cancel response from MongoDB: %v", err)
-                            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get cancel response"})
+                            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                             // Reset Redis status to prevent duplicate processing
                             if err := h.onestService.Clients.RedisClient.Set(worker.TransactionID, "", 0); err != nil {
                                 logrus.Warnf("Failed to reset Redis status for transaction_id %s: %v", worker.TransactionID, err)
@@ -793,7 +816,7 @@ func (h *OnestBPPHandler) Cancel() gin.HandlerFunc {
                             return
                         }
                         
-                        c.JSON(http.StatusNotFound, gin.H{"error": "No job application cancelled"})
+                        c.JSON(http.StatusNotFound, gin.H{"error": "No job application found to be cancelled"})
                         // Reset Redis status to prevent duplicate processing
                         if err := h.onestService.Clients.RedisClient.Set(worker.TransactionID, "", 0); err != nil {
                             logrus.Warnf("Failed to reset Redis status for transaction_id %s: %v", worker.TransactionID, err)

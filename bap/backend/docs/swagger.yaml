@@ -1,0 +1,2072 @@
+swagger: "2.0"
+info:
+  contact: {}
+paths:
+  /worker/add:
+    post:
+      description: Add a new worker profile
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Worker
+      summary: Add a new worker profile
+      parameters:
+        - in: body
+          name: request
+          description: request body
+          required: true
+          schema:
+            $ref: "#/definitions/worker.AddWorkerProfileRequest"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+  /on_cancel:
+    post:
+      description: Cancel job application
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - ONEST Network
+      summary: Cancel job application
+      parameters:
+        - description: request body
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/response.CancelResponse"
+      responses:
+        "200":
+          description: OK
+  /on_confirm:
+    post:
+      description: Confirm job application
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - ONEST Network
+      summary: Confirm job application
+      parameters:
+        - description: request body
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/response.ConfirmResponse"
+      responses:
+        "200":
+          description: OK
+  /on_search:
+    post:
+      description: Search jobs
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - ONEST Network
+      summary: Search jobs
+      parameters:
+        - description: request body
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/response.SearchResponse"
+      responses:
+        "200":
+          description: OK
+  /on_init:
+    post:
+      description: Initialize job application
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - ONEST Network
+      summary: Initialize job application
+      parameters:
+        - description: request body
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/response.InitResponse"
+      responses:
+        "200":
+          description: OK
+  /on_select:
+    post:
+      description: Select job
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - ONEST Network
+      summary: Select job
+      parameters:
+        - description: request body
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/response.SelectResponse"
+      responses:
+        "200":
+          description: OK
+  /on_status:
+    post:
+      description: Status of job application
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - ONEST Network
+      summary: Status of job application
+      parameters:
+        - description: request body
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/response.StatusResponse"
+      responses:
+        "200":
+          description: OK
+  /cancel:
+    post:
+      description: Cancel job application
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Worker
+      summary: Cancel job application
+      parameters:
+        - description: request body
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/request.SeekerCancelPayload"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/response.CancelResponse"
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        "404":
+          description: Not Found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: No job application found to be cancelled
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                examples:
+                  worker_profile: Failed to get worker profile with worker ID
+                  parse_request: Failed to parse cancel job request
+                  redis_cache: Failed to cache cancel response in Redis for transaction_id
+                  cancel_request_failed: Failed to send cancel request to ONEST Network
+                  mongodb_cancel_response_check:
+                    Failed to get cancel response from
+                    MongoDB
+                  empty_worker_id: please provide a valid worker ID
+        "504":
+          description: Gateway Timeout
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Response timeout
+  /confirm:
+    post:
+      description: Confirm job application
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Worker
+      summary: Confirm job application
+      parameters:
+        - description: request body
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/request.SeekerConfirmPayload"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/response.ConfirmResponse"
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        "404":
+          description: Not Found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: No job application found to be confirmed
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                examples:
+                  worker_profile: Failed to get worker profile with worker ID
+                  update_worker_application_id:
+                    Failed to update worker with application
+                    ID
+                  parse_request: Failed to parse confirm job request
+                  redis_cache: Failed to cache confirm response in Redis for transaction_id
+                  confirm_request_failed:
+                    Failed to send confirm request to ONEST
+                    Network
+                  mongodb_confirm_response_check:
+                    Failed to get confirm response from
+                    MongoDB
+                  empty_worker_id: please provide a valid worker ID
+        "504":
+          description: Gateway Timeout
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Response timeout
+  /search:
+    post:
+      description: Search jobs
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Worker
+      summary: Search jobs
+      parameters:
+        - description: request body
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/request.SeekerSearchPayload"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/response.SearchResponse"
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        "404":
+          description: Not Found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: No jobs found
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                examples:
+                  update_worker_transaction_id:
+                    Failed to update worker profile with
+                    transaction ID
+                  parse_request: Failed to parse search job request
+                  redis_cache: Failed to cache search response in Redis for transaction_id
+                  create_search_response: Failed to create search response document
+                  search_request_failed: Failed to send search request to ONEST Network
+                  mongodb_search_response_check:
+                    Failed to get search response from
+                    MongoDB
+                  empty_worker_id: please provide a valid worker ID
+        "504":
+          description: Gateway Timeout
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Response timeout
+  /init:
+    post:
+      description: Initialize job application
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Worker
+      summary: Initialize job application
+      parameters:
+        - description: request body
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/request.SeekerInitPayload"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/response.InitResponse"
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        "404":
+          description: Not Found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: No job application found
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                examples:
+                  worker_profile: Failed to get worker profile with worker ID
+                  parse_request: Failed to parse init job request
+                  redis_cache: Failed to cache init response in Redis for transaction_id
+                  init_request_failed: Failed to send init request to ONEST Network
+                  mongodb_search_response_check:
+                    Failed to get init response from
+                    MongoDB
+                  empty_worker_id: please provide a valid worker ID
+        "504":
+          description: Gateway Timeout
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Response timeout
+  /select:
+    post:
+      description: Select job
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Worker
+      summary: Select job
+      parameters:
+        - description: request body
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/request.SeekerSelectPayload"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/response.SelectResponse"
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        "404":
+          description: Not Found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: No job selected
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                examples:
+                  update_worker_transaction_id:
+                    Failed to update worker profile with
+                    transaction ID
+                  worker_profile: Failed to get worker profile with worker ID
+                  create_select_response: Failed to create select response document
+                  parse_request: Failed to parse select job request
+                  redis_cache: Failed to cache select response in Redis for transaction_id
+                  select_request_failed: Failed to send select request to ONEST Network
+                  mongodb_search_response_check:
+                    Failed to get select response from
+                    MongoDB
+                  empty_worker_id: please provide a valid worker ID
+        "504":
+          description: Gateway Timeout
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Response timeout
+  /status:
+    post:
+      description: Status of job application
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      tags:
+        - Worker
+      summary: Status of job application
+      parameters:
+        - description: request body
+          name: request
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/reuqest.SeekerStatusPayload"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/response.StatusResponse"
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        "404":
+          description: Not Found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: No job application found
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                examples:
+                  worker_profile: Failed to get worker profile with worker ID
+                  parse_request: Failed to parse status job request
+                  redis_cache: Failed to cache status response in Redis for transaction_id
+                  status_request_failed: Failed to send status request to ONEST Network
+                  mongodb_search_response_check:
+                    Failed to get status response from
+                    MongoDB
+                  empty_worker_id: please provide a valid worker ID
+        "504":
+          description: Gateway Timeout
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Response timeout
+definitions:
+  worker.AddWorkerProfileRequest:
+    type: object
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      gender:
+        $ref: "#/definitions/worker.Gender"
+      location:
+        $ref: "#/definitions/worker.Location"
+      name:
+        type: string
+      phone:
+        type: string
+      preferred_job_roles:
+        $ref: "#/definitions/worker.JobRole"
+      preferred_languages:
+        $ref: "#/definitions/worker.Language"
+      certifications:
+        $ref: "#/definitions/worker.Certification"
+      credentials:
+        $ref: "#/definitions/worker.Credential"
+      age:
+        type: integer
+      skills:
+        type: array
+        items:
+          type: string
+      Experience:
+        type: integer
+  worker.Location:
+    type: object
+    properties:
+      city:
+        type: string
+      coordinates:
+        $ref: "#/definitions/worker.Coordinates"
+      areaCode:
+        description: "Area code, for example: '560102'"
+        type: string
+      state:
+        type: string
+  worker.Credential:
+    type: object
+    properties:
+      type:
+        type: string
+      name:
+        type: string
+      url:
+        type: string
+      short_desc:
+        type: string
+      long_desc:
+        type: string
+  worker.Certification:
+    type: object
+    properties:
+      issued_by:
+        type: string
+      name:
+        type: string
+      issued_date:
+        type: string
+      expiry_date:
+        type: string
+      document_url:
+        type: string
+  worker.Coordinates:
+    type: object
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+  worker.Language:
+    type: string
+    enum:
+      - English
+      - Hindi
+      - Kannada
+  worker.JobRole:
+    type: string
+    enum:
+      - Helper
+      - Welder
+      - Driver
+      - Cashier
+  worker.Gender:
+    type: string
+    enum:
+      - Female
+      - Male
+      - Other
+  request.SeekerCancelPayload:
+    type: object
+    properties:
+      worker_id:
+        type: string
+      bpp_id:
+        type: string
+      bpp_uri:
+        type: string
+      location:
+        $ref: "#/definitions/request.SelectedJobLocation"
+  request.SelectedJobLocation:
+    type: object
+    properties:
+      city:
+        type: string
+      country:
+        type: string
+      state:
+        type: string
+      area_code:
+        type: string
+      coordinates:
+        $ref: "#/definitions/request.Coordinates"
+  request.SeekerConfirmPayload:
+    type: object
+    properties:
+      worker_id:
+        type: string
+      job_id:
+        type: string
+      provider_id:
+        type: string
+      bpp_id:
+        type: string
+      bpp_uri:
+        type: string
+      location:
+        $ref: "#/definitions/request.SelectedJobLocation"
+  request.SeekerStatusPayload:
+    type: object
+    properties:
+      worker_id:
+        type: string
+      bpp_id:
+        type: string
+      bpp_uri:
+        type: string
+      location:
+        $ref: "#/definitions/request.SelectedJobLocation"
+  request.SeekerSelectPayload:
+    type: object
+    properties:
+      worker_id:
+        type: string
+      job_id:
+        type: string
+      provider_id:
+        type: string
+      bpp_id:
+        type: string
+      bpp_uri:
+        type: string
+      location:
+        $ref: "#/definitions/request.SelectedJobLocation"
+  request.SeekerInitPayload:
+    type: object
+    properties:
+      worker_id:
+        type: string
+      job_id:
+        type: string
+      provider_id:
+        type: string
+      bpp_id:
+        type: string
+      bpp_uri:
+        type: string
+      location:
+        $ref: "#/definitions/request.SelectedJobLocation"
+  request.SeekerSearchPayload:
+    type: object
+    properties:
+      worker_id:
+        type: string
+      role:
+        type: string
+      provider:
+        type: string
+      category:
+        type: string
+      employment_type:
+        type: string
+      location:
+        $ref: "#/definitions/request.SeekerLocation"
+  request.SeekerLocation:
+    type: object
+    properties:
+      city:
+        type: string
+      country:
+        type: string
+      state:
+        type: string
+      area_code:
+        type: string
+      coordinates:
+        $ref: "#/definitions/request.Coordinates"
+  request.Coordinates:
+    type: object
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+  response.CancelResponse:
+    type: object
+    properties:
+      context:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Context"
+      message:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Message"
+  response.InitResponse:
+    type: object
+    properties:
+      context:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Context"
+      message:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Message"
+  response.SearchResponse:
+    type: object
+    properties:
+      context:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Context"
+      message:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Message"
+  response.SelectResponse:
+    type: object
+    properties:
+      context:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Context"
+      message:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Message"
+  response.StatusResponse:
+    type: object
+    properties:
+      context:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Context"
+      message:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Message"
+  response.ConfirmResponse:
+    type: object
+    properties:
+      context:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Context"
+      message:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Message"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Context
+  : type: object
+    properties:
+      action:
+        type: string
+      bap_id:
+        type: string
+      bap_uri:
+        type: string
+      bpp_id:
+        type: string
+      bpp_uri:
+        type: string
+      domain:
+        type: string
+      location:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Location"
+      message_id:
+        type: string
+      timestamp:
+        type: string
+      transaction_id:
+        type: string
+      ttl:
+        type: string
+      version:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Location
+  : type: object
+    properties:
+      city:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.City"
+      country:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Country"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Country
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.City
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Message
+  : type: object
+    properties:
+      order:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Order"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Order
+  : type: object
+    properties:
+      fulfillments:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Fulfillments"
+      id:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Items"
+      payments:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Payments"
+      provider:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Provider"
+      quote:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Quote"
+      status:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Params
+  : type: object
+    properties:
+      amount:
+        type: string
+      currency:
+        type: string
+      transaction_id:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Payments
+  : type: object
+    properties:
+      collected_by:
+        type: string
+      params:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Params"
+      status:
+        type: string
+      tags:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Tags"
+      type:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Price
+  : type: object
+    properties:
+      currency:
+        type: string
+      value:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Provider
+  : type: object
+    properties:
+      id:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Quote
+  : type: object
+    properties:
+      breakup:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Breakup"
+      price:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Price"
+      ttl:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.State
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Descriptor"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Tags
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Descriptor"
+      list:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.List"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_request.Location
+  : type: object
+    properties:
+      city:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_request.City"
+      country:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_request.Country"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_request.Message
+  : type: object
+    properties:
+      cancellation_reason_id:
+        type: string
+      order_id:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Breakup
+  : type: object
+    properties:
+      item:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Item"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Descriptor
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Fulfillments
+  : type: object
+    properties:
+      id:
+        type: string
+      state:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.State"
+      tags:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Tags"
+      type:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Item
+  : type: object
+    properties:
+      id:
+        type: string
+      price:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Price"
+      title:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Items
+  : type: object
+    properties:
+      fulfillment_ids:
+        type: array
+        items:
+          type: string
+      id:
+        type: string
+      tags:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.Tags"
+      time:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_cancel_response.List
+  : type: object
+    properties:
+      code:
+        type: string
+      value:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Breakup
+  : type: object
+    properties:
+      item:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Item"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.City
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Contact
+  : type: object
+    properties:
+      email:
+        type: string
+      phone:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Context
+  : type: object
+    properties:
+      action:
+        type: string
+      bap_id:
+        type: string
+      bap_uri:
+        type: string
+      bpp_id:
+        type: string
+      bpp_uri:
+        type: string
+      domain:
+        type: string
+      location:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Location"
+      message_id:
+        type: string
+      timestamp:
+        type: string
+      transaction_id:
+        type: string
+      ttl:
+        type: string
+      version:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Country
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Creds
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.CredsDescriptor"
+      id:
+        type: string
+      type:
+        type: string
+      url:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.CredsDescriptor
+  : type: object
+    properties:
+      long_desc:
+        type: string
+      name:
+        type: string
+      short_desc:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Customer
+  : type: object
+    properties:
+      contact:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Contact"
+      person:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Person"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Fulfillments
+  : type: object
+    properties:
+      customer:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Customer"
+      id:
+        type: string
+      state:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.State"
+      type:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Item
+  : type: object
+    properties:
+      id:
+        type: string
+      price:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Price"
+      title:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Items
+  : type: object
+    properties:
+      fulfillment_ids:
+        type: array
+        items:
+          type: string
+      id:
+        type: string
+      tags:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Tags"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Languages
+  : type: object
+    properties:
+      name:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.List
+  : type: object
+    properties:
+      code:
+        type: string
+      value:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Location
+  : type: object
+    properties:
+      city:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.City"
+      country:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Country"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Message
+  : type: object
+    properties:
+      order:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Order"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Order
+  : type: object
+    properties:
+      fulfillments:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Fulfillments"
+      id:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Items"
+      payments:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Payments"
+      provider:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Provider"
+      quote:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Quote"
+      status:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Params
+  : type: object
+    properties:
+      amount:
+        type: string
+      currency:
+        type: string
+      transaction_id:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Payments
+  : type: object
+    properties:
+      collected_by:
+        type: string
+      params:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Params"
+      status:
+        type: string
+      tags:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Tags"
+      type:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Person
+  : type: object
+    properties:
+      age:
+        type: string
+      creds:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Creds"
+      gender:
+        type: string
+      languages:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Languages"
+      name:
+        type: string
+      skills:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Skills"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Price
+  : type: object
+    properties:
+      currency:
+        type: string
+      value:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Provider
+  : type: object
+    properties:
+      id:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Quote
+  : type: object
+    properties:
+      breakup:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Breakup"
+      price:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Price"
+      ttl:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Skills
+  : type: object
+    properties:
+      name:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.State
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.StateDescriptor"
+      updated_at:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.StateDescriptor
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.Tags
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.TagsDescriptor"
+      list:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.List"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_confirm_response.TagsDescriptor
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Breakup
+  : type: object
+    properties:
+      item:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Item"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.City
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Contact
+  : type: object
+    properties:
+      email:
+        type: string
+      phone:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Context
+  : type: object
+    properties:
+      action:
+        type: string
+      bap_id:
+        type: string
+      bap_uri:
+        type: string
+      bpp_id:
+        type: string
+      bpp_uri:
+        type: string
+      domain:
+        type: string
+      location:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Location"
+      message_id:
+        type: string
+      timestamp:
+        type: string
+      transaction_id:
+        type: string
+      ttl:
+        type: string
+      version:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Country
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Creds
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.CredsDescriptor"
+      id:
+        type: string
+      type:
+        type: string
+      url:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.CredsDescriptor
+  : type: object
+    properties:
+      long_desc:
+        type: string
+      name:
+        type: string
+      short_desc:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Customer
+  : type: object
+    properties:
+      contact:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Contact"
+      person:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Person"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Fulfillments
+  : type: object
+    properties:
+      customer:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Customer"
+      id:
+        type: string
+      state:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.State"
+      type:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Item
+  : type: object
+    properties:
+      id:
+        type: string
+      price:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Price"
+      title:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Items
+  : type: object
+    properties:
+      fulfillment_ids:
+        type: array
+        items:
+          type: string
+      id:
+        type: string
+      tags:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Tags"
+      xinput:
+        $ref: "#/definitions/response.Xinput"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Languages
+  : type: object
+    properties:
+      name:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.List
+  : type: object
+    properties:
+      code:
+        type: string
+      value:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Location
+  : type: object
+    properties:
+      city:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.City"
+      country:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Country"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Message
+  : type: object
+    properties:
+      order:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Order"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Order
+  : type: object
+    properties:
+      fulfillments:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Fulfillments"
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Items"
+      payments:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Payments"
+      provider:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Provider"
+      quote:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Quote"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Payments
+  : type: object
+    properties:
+      collected_by:
+        type: string
+      status:
+        type: string
+      tags:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Tags"
+      type:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Person
+  : type: object
+    properties:
+      age:
+        type: string
+      creds:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Creds"
+      gender:
+        type: string
+      languages:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Languages"
+      name:
+        type: string
+      skills:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Skills"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Price
+  : type: object
+    properties:
+      currency:
+        type: string
+      value:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Provider
+  : type: object
+    properties:
+      id:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Quote
+  : type: object
+    properties:
+      breakup:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Breakup"
+      price:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Price"
+      ttl:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Skills
+  : type: object
+    properties:
+      name:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.State
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.StateDescriptor"
+      updated_at:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.StateDescriptor
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.Tags
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.TagsDescriptor"
+      list:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.List"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_init_response.TagsDescriptor
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Breakup
+  : type: object
+    properties:
+      item:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Item"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.City
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Context
+  : type: object
+    properties:
+      action:
+        type: string
+      bap_id:
+        type: string
+      bap_uri:
+        type: string
+      bpp_id:
+        type: string
+      bpp_uri:
+        type: string
+      domain:
+        type: string
+      location:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Location"
+      message_id:
+        type: string
+      timestamp:
+        type: string
+      transaction_id:
+        type: string
+      ttl:
+        type: string
+      version:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Country
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Descriptor
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Fulfillments
+  : type: object
+    properties:
+      id:
+        type: string
+      type:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Item
+  : type: object
+    properties:
+      id:
+        type: string
+      price:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Price"
+      title:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Items
+  : type: object
+    properties:
+      fulfillment_ids:
+        type: array
+        items:
+          type: string
+      id:
+        type: string
+      tags:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Tags"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.List
+  : type: object
+    properties:
+      code:
+        type: string
+      value:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Location
+  : type: object
+    properties:
+      city:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.City"
+      country:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Country"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Message
+  : type: object
+    properties:
+      order:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Order"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Order
+  : type: object
+    properties:
+      fulfillments:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Fulfillments"
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Items"
+      provider:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Provider"
+      quote:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Quote"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Price
+  : type: object
+    properties:
+      currency:
+        type: string
+      value:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Provider
+  : type: object
+    properties:
+      id:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Quote
+  : type: object
+    properties:
+      breakup:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Breakup"
+      price:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Price"
+      ttl:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Tags
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.Descriptor"
+      list:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_select_response.List"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Breakup
+  : type: object
+    properties:
+      item:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Item"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.City
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Context
+  : type: object
+    properties:
+      action:
+        type: string
+      bap_id:
+        type: string
+      bap_uri:
+        type: string
+      bpp_id:
+        type: string
+      bpp_uri:
+        type: string
+      domain:
+        type: string
+      location:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Location"
+      message_id:
+        type: string
+      timestamp:
+        type: string
+      transaction_id:
+        type: string
+      ttl:
+        type: string
+      version:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Country
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Descriptor
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Fulfillments
+  : type: object
+    properties:
+      id:
+        type: string
+      state:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.State"
+      type:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Item
+  : type: object
+    properties:
+      id:
+        type: string
+      price:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Price"
+      title:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Items
+  : type: object
+    properties:
+      fulfillment_ids:
+        type: array
+        items:
+          type: string
+      id:
+        type: string
+      tags:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Tags"
+      time:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.List
+  : type: object
+    properties:
+      code:
+        type: string
+      value:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Location
+  : type: object
+    properties:
+      city:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.City"
+      country:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Country"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Message
+  : type: object
+    properties:
+      order:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Order"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Order
+  : type: object
+    properties:
+      fulfillments:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Fulfillments"
+      id:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Items"
+      payments:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Payments"
+      provider:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Provider"
+      quote:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Quote"
+      status:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Params
+  : type: object
+    properties:
+      amount:
+        type: string
+      currency:
+        type: string
+      transaction_id:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Payments
+  : type: object
+    properties:
+      collected_by:
+        type: string
+      params:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Params"
+      status:
+        type: string
+      tags:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Tags"
+      type:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Price
+  : type: object
+    properties:
+      currency:
+        type: string
+      value:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Provider
+  : type: object
+    properties:
+      id:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Quote
+  : type: object
+    properties:
+      breakup:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Breakup"
+      price:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Price"
+      ttl:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.State
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Descriptor"
+      updated_at:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Tags
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.Descriptor"
+      list:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_status_response.List"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.City
+  : type: object
+    properties:
+      code:
+        type: string
+      name:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Contact
+  : type: object
+    properties:
+      email:
+        type: string
+      phone:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Context
+  : type: object
+    properties:
+      action:
+        type: string
+      bap_id:
+        type: string
+      bap_uri:
+        type: string
+      bpp_id:
+        type: string
+      bpp_uri:
+        type: string
+      domain:
+        type: string
+      location:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Location"
+      message_id:
+        type: string
+      timestamp:
+        type: string
+      transaction_id:
+        type: string
+      ttl:
+        type: string
+      version:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Country
+  : type: object
+    properties:
+      code:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Fulfillments
+  : type: object
+    properties:
+      id:
+        type: string
+      type:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Items
+  : type: object
+    properties:
+      category_ids:
+        type: array
+        items:
+          type: string
+      creator:
+        $ref: "#/definitions/response.Creator"
+      descriptor:
+        $ref: "#/definitions/response.ItemsDescriptor"
+      fulfillment_ids:
+        type: array
+        items:
+          type: string
+      id:
+        type: string
+      location_ids:
+        type: array
+        items:
+          type: string
+      price:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Price"
+      quantity:
+        $ref: "#/definitions/response.Quantity"
+      tags:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Tags"
+      time:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.List
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.TagsDescriptor"
+      value:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Location
+  : type: object
+    properties:
+      city:
+        $ref: "#/definitions/response.ContextCity"
+      country:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Country"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Message
+  : type: object
+    properties:
+      catalog:
+        $ref: "#/definitions/response.Catalog"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Price
+  : type: object
+    properties:
+      currency:
+        type: string
+      maximum_value:
+        type: string
+      value:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.State
+  : type: object
+    properties:
+      code:
+        type: string
+      name:
+        type: string
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Tags
+  : type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.TagsDescriptor"
+      list:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.List"
+  ? github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.TagsDescriptor
+  : type: object
+    properties:
+      code:
+        type: string
+      name:
+        type: string
+  response.Creator:
+    type: object
+    properties:
+      address:
+        type: string
+      city:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.City"
+      contact:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Contact"
+      descriptor:
+        $ref: "#/definitions/response.CreatorDescriptor"
+      state:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.State"
+  response.ItemsDescriptor:
+    type: object
+    properties:
+      images:
+        type: array
+        items:
+          $ref: "#/definitions/response.Images"
+      long_desc:
+        type: string
+      media:
+        type: array
+        items:
+          $ref: "#/definitions/response.Media"
+      name:
+        type: string
+      short_desc:
+        type: string
+  response.CreatorDescriptor:
+    type: object
+    properties:
+      code:
+        type: string
+      images:
+        type: array
+        items:
+          $ref: "#/definitions/response.Images"
+      long_desc:
+        type: string
+      media:
+        type: array
+        items:
+          $ref: "#/definitions/response.Media"
+      name:
+        type: string
+      short_desc:
+        type: string
+  response.Media:
+    type: object
+    properties:
+      mimetype:
+        type: string
+      url:
+        type: string
+  response.Images:
+    type: object
+    properties:
+      url:
+        type: string
+  response.ContextCity:
+    type: object
+    properties:
+      code:
+        type: string
+  response.Quantity:
+    type: object
+    properties:
+      available:
+        $ref: "#/definitions/response.Available"
+  response.Available:
+    type: object
+    properties:
+      count:
+        type: integer
+  response.Catalog:
+    type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/response.CatalogDescriptor"
+      providers:
+        type: array
+        items:
+          $ref: "#/definitions/response.Providers"
+  response.CatalogDescriptor:
+    type: object
+    properties:
+      name:
+        type: string
+  response.Providers:
+    type: object
+    properties:
+      descriptor:
+        $ref: "#/definitions/response.ProvidersDescriptor"
+      fulfillments:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Fulfillments"
+      id:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.Items"
+      locations:
+        type: array
+        items:
+          $ref: "#/definitions/response.Locations"
+  response.ProvidersDescriptor:
+    type: object
+    properties:
+      images:
+        type: array
+        items:
+          $ref: "#/definitions/response.Images"
+      name:
+        type: string
+      short_desc:
+        type: string
+  response.Locations:
+    type: object
+    properties:
+      address:
+        type: string
+      city:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.City"
+      gps:
+        type: string
+      id:
+        type: string
+      postalCode:
+        type: string
+      state:
+        $ref: "#/definitions/github_com_ONEST-Network_Whatsapp-Chatbot_bap_backend_pkg_types_payload_onest_search_response.State"
+      street:
+        type: string

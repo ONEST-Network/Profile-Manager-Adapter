@@ -13,6 +13,13 @@ type SelectedJobLocation struct {
 	City    string `json:"city"`
 	State   string `json:"state"`
 	Country string `json:"country"`
+	AreaCode    string      `json:"area_code"`
+	Coordinates Coordinates `json:"coordinates"`
+}
+
+type Coordinates struct {
+	Latitude  float64 `bson:"latitude" json:"latitude"`
+	Longitude float64 `bson:"longitude" json:"longitude"`
 }
 
 type ConfirmRequest struct {
