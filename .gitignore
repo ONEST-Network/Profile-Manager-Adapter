@@ -1,0 +1,8 @@
+.env.local
+.env
+Open Mandates.xlsx
+main.py
+faiss_*
+payload.json
+reference_swagger.json
+backend.exe

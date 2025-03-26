@@ -1,0 +1,132 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API definition for Job Manager Adapter endpoints",
+        "version": "1.0.0",
+        "title": "Job Manager Adapter API"
+    },
+    "paths": {
+        "/on_search": {
+            "post": {
+                "description": "BPP sends the jobs found to this endpoint in response to a search job request.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ONEST Network"
+                ],
+                "summary": "Search Job Response",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "payload",
+                        "description": "request payload",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/onSearchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/SearchResponseAck"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "request.onSearchRequest": {
+            "type": "object",
+            "properties": {
+                "context": {
+                    "type": "object",
+                    "properties": {
+                        "transaction_id": {
+                            "type": "string",
+                            "example": "tx-123456"
+                        },
+                        "message_id": {
+                            "type": "string",
+                            "example": "msg-123456"
+                        }
+                    },
+                    "required": [
+                        "transaction_id",
+                        "message_id"
+                    ]
+                },
+                "other_field": {
+                    "type": "string",
+                    "example": "additional request parameter"
+                }
+            },
+            "required": [
+                "context"
+            ]
+        },
+        "SearchResponseAck": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "object",
+                    "properties": {
+                        "ack": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "ACK",
+                                        "NACK"
+                                    ],
+                                    "example": "ACK"
+                                }
+                            }
+                        }
+                    }
+                },
+                "error": {
+                    "$ref": "#/definitions/ErrorResponseContent"
+                }
+            }
+        },
+        "ErrorResponseContent": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "10000"
+                },
+                "paths": {
+                    "type": "string",
+                    "example": ".context.transaction_id"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "error details (if any)"
+                }
+            }
+        },
+        "ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "$ref": "#/definitions/ErrorResponseContent"
+                }
+            }
+        }
+    }
+}
