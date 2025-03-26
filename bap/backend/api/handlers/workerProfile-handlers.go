@@ -22,5 +22,6 @@ func AddWorkerProfile(clients *clients.Clients) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 			return
 		}
+		c.JSON(http.StatusOK, gin.H{"message": "Worker profile added successfully"})
 	}
 }
