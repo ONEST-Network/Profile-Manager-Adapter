@@ -45,11 +45,6 @@ func main() {
 	// initialize the server
 	server := server.SetupServer(clients, bppHandler)
 
-	// // Initialize job sync from BPP side
-	// jobSync := utils.NewJobSync(clients, 5*time.Minute)
-    // jobSync.Start()
-    // defer jobSync.Stop()
-
 	// start the server
 	fmt.Println("Starting server at port", config.Config.HTTPPort)
 	if err := server.Run(fmt.Sprintf(":%s", config.Config.HTTPPort)); err != nil {
