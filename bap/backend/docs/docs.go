@@ -299,6 +299,18 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "Job application has already been cancelled"
+                                }
+                            }
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -307,6 +319,7 @@ const docTemplate = `{
                                 "error": {
                                     "type": "string",
                                     "examples": {
+                                        "update_last_request_executed": "Failed to update last request executed status to cancel",
                                         "worker_profile": "Failed to get worker profile with worker ID",
                                         "parse_request": "Failed to parse cancel job request",
                                         "redis_cache": "Failed to cache cancel response in Redis for transaction_id",
@@ -387,6 +400,18 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "Job application has already been confirmed"
+                                }
+                            }
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -395,6 +420,7 @@ const docTemplate = `{
                                 "error": {
                                     "type": "string",
                                     "examples": {
+                                        "update_last_request_executed": "Failed to update last request executed status to confirm",
                                         "worker_profile": "Failed to get worker profile with worker ID",
                                         "update_worker_application_id": "Failed to update worker with application ID",
                                         "parse_request": "Failed to parse confirm job request",
@@ -565,6 +591,18 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "Job application has already been created"
+                                }
+                            }
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -573,6 +611,7 @@ const docTemplate = `{
                                 "error": {
                                     "type": "string",
                                     "examples": {
+                                        "update_last_request_executed": "Failed to update last request executed status to init",
                                         "worker_profile": "Failed to get worker profile with worker ID",
                                         "parse_request": "Failed to parse init job request",
                                         "redis_cache": "Failed to cache init response in Redis for transaction_id",
@@ -653,6 +692,18 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "Job has already been selected"
+                                }
+                            }
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -661,6 +712,8 @@ const docTemplate = `{
                                 "error": {
                                     "type": "string",
                                     "examples": {
+                                        "update_last_request_executed": "Failed to update last request executed status to select",
+                                        "update_worker_active_job_applications": "Failed to update worker profile with active job applications for transaction ID",
                                         "update_worker_transaction_id": "Failed to update worker profile with transaction ID",
                                         "worker_profile": "Failed to get worker profile with worker ID",
                                         "create_select_response": "Failed to create select response document",
@@ -923,6 +976,12 @@ const docTemplate = `{
         "request.SeekerCancelPayload": {
             "type": "object",
             "properties": {
+                "job_id": {
+                    "type": "string"
+                },
+                "application_id": {
+                    "type": "string"
+                },
                 "worker_id": {
                     "type": "string"
                 },
@@ -983,6 +1042,9 @@ const docTemplate = `{
         "request.SeekerStatusPayload": {
             "type": "object",
             "properties": {
+                "application_id": {
+                    "type": "string"
+                },
                 "worker_id": {
                     "type": "string"
                 },

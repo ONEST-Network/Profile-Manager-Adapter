@@ -324,7 +324,7 @@ func (h *OnestBPPHandler) Select() gin.HandlerFunc {
                 // This means the job ID already exists in active applications
                 if activeJobApplication.LastRequestExecuted == "select" {
                     // This means the job ID is already in the process of being selected
-                    c.JSON(http.StatusConflict, gin.H{"error": "Job is already being selected"})
+                    c.JSON(http.StatusConflict, gin.H{"error": "Job has already been selected"})
                     return
                 }
             }
@@ -506,16 +506,13 @@ func (h *OnestBPPHandler) Init() gin.HandlerFunc {
             
                         // Return the jobs response to the client
                         if searchResponse != nil && len(searchResponse.JobsResponse) > 0 {
-                            // jobApp := worker.ActiveJobApplications[payload.JobID]
-                            // jobApp.LastRequestExecuted = "init"
-                            // worker.ActiveJobApplications[payload.JobID] = jobApp
                             updateQuery := bson.D{{Key: "id", Value: payload.WorkerID}}
                             updateFields := bson.D{{Key: "$set", Value: bson.D{
                                 {Key: "active_job_applications." + payload.JobID + ".last_request_executed", Value: "init"},
                             }}}
 
                             if err := h.onestService.Clients.WorkerProfileClient.UpdateWorkerProfile(updateQuery, updateFields); err != nil {
-                                logrus.Errorf("Failed to update last request executed status to select: %v", err)
+                                logrus.Errorf("Failed to update last request executed status to init: %v", err)
                                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                                 return
                             }
@@ -639,7 +636,7 @@ func (h *OnestBPPHandler) Confirm() gin.HandlerFunc {
                             }}}
 
                             if err := h.onestService.Clients.WorkerProfileClient.UpdateWorkerProfile(updateQuery, updateFields); err != nil {
-                                logrus.Errorf("Failed to update last request executed status to select: %v", err)
+                                logrus.Errorf("Failed to update last request executed status to confirm: %v", err)
                                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                                 return
                             }
@@ -849,7 +846,7 @@ func (h *OnestBPPHandler) Cancel() gin.HandlerFunc {
                             }}}
 
                             if err := h.onestService.Clients.WorkerProfileClient.UpdateWorkerProfile(updateQuery, updateFields); err != nil {
-                                logrus.Errorf("Failed to update last request executed status to select: %v", err)
+                                logrus.Errorf("Failed to update last request executed status to cancel: %v", err)
                                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                                 return
                             }
