@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 
@@ -210,7 +209,7 @@ func (h *OnestBPPHandler) Search() gin.HandlerFunc {
 
             updateQuery := bson.D{{Key: "id", Value: payload.WorkerID}}
             updateFields := bson.D{{Key: "$set", Value: bson.D{
-                {Key: "transaction_id", Value: parsedRequest.Context.TransactionID},
+                {Key: "last_transaction_id", Value: parsedRequest.Context.TransactionID},
                 {Key: "message_id", Value: parsedRequest.Context.MessageID},
             }}}
             
@@ -295,51 +294,39 @@ func (h *OnestBPPHandler) Select() gin.HandlerFunc {
             return
         }
         if payload.WorkerID != "" {
-            workerTransactionId := ""
-            workerMessageId := ""
             worker, err := h.onestService.Clients.WorkerProfileClient.GetWorkerProfile(payload.WorkerID)
             if err != nil {
                 logrus.Errorf("Failed to get worker profile with worker ID %s: %v", payload.WorkerID, err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
-            
+            workerTransactionId := worker.TransactionID
+            workerMessageId := worker.MessageID
 
-            if worker.TransactionID == "" {
-                workerTransactionId = uuid.New().String()
-                // Create a new document in the SelectResponseClient collection
-                selectJobResponse := dbSearchResponse.SearchJobResponse {
-                    ID: worker.TransactionID,
-                    TransactionID: worker.TransactionID,
-                }
-                // Insert the document into the collection
-                err = h.onestService.Clients.SearchReponseClient.CreateSearchJobResponse(&selectJobResponse)
-                if err != nil {
-                    logrus.Errorf("Failed to create select response document: %v", err)
-                    c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-                    return
-                }
-
-                logrus.Infof("Created select response document with transaction_id: %s", worker.TransactionID)
-                parsedRequest, err := builders.BuildBPPSelectJobRequest(payload, workerTransactionId, workerMessageId, payload.BppID, payload.BppURI)
-                if err != nil {
-                    logrus.Errorf("Failed to parse select job request, %v", err)
-                    c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-                    return
-                }
+            activeJobApplication, exists := worker.ActiveJobApplications[payload.JobID]
+            if !exists {
+                // This means the job ID doesn't exist in active applications
                 updateQuery := bson.D{{Key: "id", Value: payload.WorkerID}}
                 updateFields := bson.D{{Key: "$set", Value: bson.D{
-                    {Key: "transaction_id", Value: parsedRequest.Context.TransactionID},
-                    {Key: "message_id", Value: parsedRequest.Context.MessageID},
+                    {Key: "active_job_applications." + payload.JobID, Value: bson.M{
+                        "transaction_id": workerTransactionId,
+                        "bpp_id": payload.BppID,
+                        "bpp_uri": payload.BppURI,
+                    }},
                 }}}
                 
                 if err := h.onestService.Clients.WorkerProfileClient.UpdateWorkerProfile(updateQuery, updateFields); err != nil {
-                    logrus.Errorf("Failed to update worker profile with transaction ID %s: %v",parsedRequest.Context.TransactionID, err)
+                    logrus.Errorf("Failed to update worker profile with active job applications for transaction ID %s: %v", workerTransactionId, err)
                     c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                     return
                 }
             } else {
-                workerTransactionId = worker.TransactionID
+                // This means the job ID already exists in active applications
+                if activeJobApplication.LastRequestExecuted == "select" {
+                    // This means the job ID is already in the process of being selected
+                    c.JSON(http.StatusConflict, gin.H{"error": "Job is already being selected"})
+                    return
+                }
             }
 
             parsedRequest, err := builders.BuildBPPSelectJobRequest(payload, workerTransactionId, workerMessageId, payload.BppID, payload.BppURI)
@@ -404,6 +391,16 @@ func (h *OnestBPPHandler) Select() gin.HandlerFunc {
             
                         // Return the jobs response to the client
                         if searchResponse != nil && len(searchResponse.JobsResponse) > 0 {
+                            updateQuery := bson.D{{Key: "id", Value: payload.WorkerID}}
+                            updateFields := bson.D{{Key: "$set", Value: bson.D{
+                                {Key: "active_job_applications." + payload.JobID + ".last_request_executed", Value: "select"},
+                            }}}
+
+                            if err := h.onestService.Clients.WorkerProfileClient.UpdateWorkerProfile(updateQuery, updateFields); err != nil {
+                                logrus.Errorf("Failed to update last request executed status to select: %v", err)
+                                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                                return
+                            }
                             c.JSON(http.StatusOK, searchResponse.SelectJobResponse[0])
                             // Reset Redis status to prevent duplicate processing
                             if err := h.onestService.Clients.RedisClient.Set(worker.TransactionID, "", 0); err != nil {
@@ -443,6 +440,11 @@ func (h *OnestBPPHandler) Init() gin.HandlerFunc {
             if err != nil {
                 logrus.Errorf("Failed to get worker profile with worker ID %s: %v", payload.WorkerID, err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                return
+            }
+            if worker.ActiveJobApplications[payload.JobID].LastRequestExecuted == "init" {
+                // This means the job application for this job ID is already submitted
+                c.JSON(http.StatusConflict, gin.H{"error": "Job application has already been submitted"})
                 return
             }
             parsedRequest, err := builders.BuildBPPInitJobRequest(payload, worker.TransactionID, worker.MessageID, payload.BppID, payload.BppURI, worker)
@@ -504,6 +506,19 @@ func (h *OnestBPPHandler) Init() gin.HandlerFunc {
             
                         // Return the jobs response to the client
                         if searchResponse != nil && len(searchResponse.JobsResponse) > 0 {
+                            // jobApp := worker.ActiveJobApplications[payload.JobID]
+                            // jobApp.LastRequestExecuted = "init"
+                            // worker.ActiveJobApplications[payload.JobID] = jobApp
+                            updateQuery := bson.D{{Key: "id", Value: payload.WorkerID}}
+                            updateFields := bson.D{{Key: "$set", Value: bson.D{
+                                {Key: "active_job_applications." + payload.JobID + ".last_request_executed", Value: "init"},
+                            }}}
+
+                            if err := h.onestService.Clients.WorkerProfileClient.UpdateWorkerProfile(updateQuery, updateFields); err != nil {
+                                logrus.Errorf("Failed to update last request executed status to select: %v", err)
+                                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                                return
+                            }
                             c.JSON(http.StatusOK, searchResponse.InitJobResponse[0])
                             // Reset Redis status to prevent duplicate processing
                             if err := h.onestService.Clients.RedisClient.Set(worker.TransactionID, "", 0); err != nil {
@@ -545,6 +560,11 @@ func (h *OnestBPPHandler) Confirm() gin.HandlerFunc {
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
+            if worker.ActiveJobApplications[payload.JobID].LastRequestExecuted == "confirm" {
+                // This means the job application for this job ID has already been confirmed
+                c.JSON(http.StatusConflict, gin.H{"error": "Job application has already been confirmed"})
+                return
+            }
             parsedRequest, err := builders.BuildBPPConfirmJobRequest(payload, worker.TransactionID, worker.MessageID, payload.BppID, payload.BppURI, worker)
             if err != nil {
                 logrus.Errorf("Failed to parse confirm job request, %v", err)
@@ -553,11 +573,11 @@ func (h *OnestBPPHandler) Confirm() gin.HandlerFunc {
             }
             updateQuery := bson.D{{Key: "id", Value: payload.WorkerID}}
             updateFields := bson.D{{Key: "$set", Value: bson.D{
-                {Key: "application_id", Value: map[string]string{parsedRequest.Context.TransactionID: parsedRequest.Message.Order.ID}},
+                {Key: "active_job_applications." + payload.JobID + ".application_id", Value: parsedRequest.Message.Order.ID},
             }}}
-            
+
             if err := h.onestService.Clients.WorkerProfileClient.UpdateWorkerProfile(updateQuery, updateFields); err != nil {
-                logrus.Errorf("Failed to update worker profile with application ID %s: %v", parsedRequest.Message.Order.ID, err)
+                logrus.Errorf("Failed to update application id in the user's active job applications: %v", err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
@@ -613,6 +633,16 @@ func (h *OnestBPPHandler) Confirm() gin.HandlerFunc {
             
                         // Return the jobs response to the client
                         if searchResponse != nil && len(searchResponse.JobsResponse) > 0 {
+                            updateQuery := bson.D{{Key: "id", Value: payload.WorkerID}}
+                            updateFields := bson.D{{Key: "$set", Value: bson.D{
+                                {Key: "active_job_applications." + payload.JobID + ".last_request_executed", Value: "confirm"},
+                            }}}
+
+                            if err := h.onestService.Clients.WorkerProfileClient.UpdateWorkerProfile(updateQuery, updateFields); err != nil {
+                                logrus.Errorf("Failed to update last request executed status to select: %v", err)
+                                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                                return
+                            }
                             c.JSON(http.StatusOK, searchResponse.ConfirmJobResponse[0])
                             // Reset Redis status to prevent duplicate processing
                             if err := h.onestService.Clients.RedisClient.Set(worker.TransactionID, "", 0); err != nil {
@@ -752,6 +782,11 @@ func (h *OnestBPPHandler) Cancel() gin.HandlerFunc {
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
+            if worker.ActiveJobApplications[payload.ApplicationID].LastRequestExecuted == "cancel" {
+                // This means the job application for this job ID has already been cancelled
+                c.JSON(http.StatusConflict, gin.H{"error": "Job application has already been cancelled"})
+                return
+            }
             parsedRequest, err := builders.BuildBPPCancelJobRequest(payload, payload.BppID, payload.BppURI, worker)
             if err != nil {
                 logrus.Errorf("Failed to parse cancel job request, %v", err)
@@ -808,6 +843,16 @@ func (h *OnestBPPHandler) Cancel() gin.HandlerFunc {
             
                         // Return the jobs response to the client
                         if searchResponse != nil && len(searchResponse.JobsResponse) > 0 {
+                            updateQuery := bson.D{{Key: "id", Value: payload.WorkerID}}
+                            updateFields := bson.D{{Key: "$set", Value: bson.D{
+                                {Key: "active_job_applications." + payload.JobID + ".last_request_executed", Value: "cancel"},
+                            }}}
+
+                            if err := h.onestService.Clients.WorkerProfileClient.UpdateWorkerProfile(updateQuery, updateFields); err != nil {
+                                logrus.Errorf("Failed to update last request executed status to select: %v", err)
+                                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                                return
+                            }
                             c.JSON(http.StatusOK, searchResponse.CancelJobResponse[0])
                             // Reset Redis status to prevent duplicate processing
                             if err := h.onestService.Clients.RedisClient.Set(worker.TransactionID, "", 0); err != nil {

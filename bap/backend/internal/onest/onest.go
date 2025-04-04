@@ -145,12 +145,6 @@ func (o *Onest) SearchJobs(payload *searchresponse.SearchResponse) {
 		logrus.Errorf(errMsg)
 		return
 	}
-
-	// Store jobs in database
-	// if err := o.clients.JobClient.CreateJobs(jobs); err != nil {
-	//     logrus.Errorf("Failed to store jobs: %v", err)
-	//     return
-	// }
 }
 
 func (j *Onest) SendJobFulfillmentAck(body io.ReadCloser) (*selectresponse.SelectResponse, *selectresponseack.SelectResponseAck) {

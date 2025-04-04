@@ -3,8 +3,6 @@ package mongodb
 import (
 	"context"
 	"errors"
-
-	// "strings"
 	"time"
 
 	"github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/pkg/config"

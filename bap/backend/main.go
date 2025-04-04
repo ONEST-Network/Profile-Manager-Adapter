@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	// "time"
 
 	"github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/pkg/clients"
 	"github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/pkg/config"
@@ -11,7 +10,6 @@ import (
 	"github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/pkg/server"
 	"github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/api/handlers"
 	"github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/internal/service"
-	// "github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/pkg/utils"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/sirupsen/logrus"
 )

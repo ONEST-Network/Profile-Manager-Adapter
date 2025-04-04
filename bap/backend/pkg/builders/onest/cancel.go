@@ -33,7 +33,7 @@ func BuildBPPCancelJobRequest(payload cancelrequest.SeekerCancelPayload, bppId, 
 			},
 		},
 		Message: cancelrequest.Message{
-			OrderID: worker.ApplicantionID[worker.TransactionID],
+			OrderID: payload.ApplicationID,
 		},
 	}
 	return &req, nil

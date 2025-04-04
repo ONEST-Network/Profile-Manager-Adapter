@@ -33,7 +33,7 @@ func BuildBPPStatusJobRequest(payload statusrequest.SeekerStatusPayload, bppId, 
 		},
 		Message: statusrequest.Message{
 			Order: statusrequest.Order{
-				ID: worker.ApplicantionID[worker.TransactionID],
+				ID: payload.ApplicationID,
 			},
 		},
 	}

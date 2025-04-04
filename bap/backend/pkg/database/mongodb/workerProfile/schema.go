@@ -15,9 +15,18 @@ type WorkerProfile struct {
 	Certifications     []Certification   `bson:"certifications"`
 	Credentials        []Credential      `bson:"credentials"`
 	Location           Location          `bson:"location"`
-	TransactionID      string            `bson:"transaction_id"`
+	TransactionID      string            `bson:"last_transaction_id"`
 	MessageID          string            `bson:"message_id"`
 	ApplicantionID     map[string]string `bson:"application_id"`
+	ActiveJobApplications map[string]ActiveJobApplications `bson:"active_job_applications"` 
+}
+
+type ActiveJobApplications struct {
+	TransactionID string `bson:"transaction_id"`
+	BPP_ID        string `bson:"bpp_id"`
+	BPP_URI       string `bson:"bpp_uri"`
+	ApplicationID string `bson:"application_id"`
+	LastRequestExecuted string `bson:"last_request_executed"`
 }
 
 type Credential struct {

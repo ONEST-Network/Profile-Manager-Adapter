@@ -5,6 +5,8 @@ type SeekerCancelPayload struct {
 	BppID   string              `json:"bpp_id,omitempty"`
 	BppURI  string              `json:"bpp_uri,omitempty"`
 	Location SelectedJobLocation `json:"location,omitempty"`
+	ApplicationID string              `json:"application_id,omitempty"`
+	JobID 	  string              `json:"job_id,omitempty"`
 }
 
 type SelectedJobLocation struct {

@@ -14,7 +14,7 @@ type Configuration struct {
 	BapUri         string   `required:"true" split_words:"true"`
 	RedisHost      string   `split_words:"true" default:"localhost"`
 	RedisPort      string   `split_words:"true" default:"6379"`
-	RedisPassword  string   `split_words:"true" default:""`
+	RedisPassword  string   `split_words:"true" default:"yourpassword"`
 }
 
 var Config Configuration
