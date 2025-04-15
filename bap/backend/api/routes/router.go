@@ -17,6 +17,7 @@ func BecknRouter(router *gin.RouterGroup, clients *clients.Clients) {
 
 func BPPOnestRoutes(router *gin.RouterGroup, handler *handlers.OnestBPPHandler) {
     router.POST("/search", handler.Search())
+	router.POST("/apply", handler.Apply())
     router.POST("/select", handler.Select())
     router.POST("/init", handler.Init())
     router.POST("/confirm", handler.Confirm())

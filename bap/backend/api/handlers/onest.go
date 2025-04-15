@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -8,7 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 
-	"github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/internal/onest"
+	"github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/pkg/config"
+    "github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/internal/onest"
 	"github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/internal/service"
 	builders "github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/pkg/builders/onest"
 	"github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/pkg/clients"
@@ -286,7 +288,105 @@ func (h *OnestBPPHandler) Search() gin.HandlerFunc {
 	}
 }
 
+func (h *OnestBPPHandler) Apply() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        var payload selectrequest.SeekerSelectPayload
+        if err := c.ShouldBindJSON(&payload); err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+            return
+        }
+
+        // Step 1: Select
+        _, err := h.processSelect(payload)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"step": "select", "error": err.Error()})
+            return
+        }
+
+        // Step 2: Init
+        _, err = h.processInit(payload)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"step": "init", "error": err.Error()})
+            return
+        }
+
+        // Step 3: Confirm
+        confirmResponse, err := h.processConfirm(payload)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"step": "confirm", "error": err.Error()})
+            return
+        }
+
+        // Return combined response
+        response := gin.H{
+            "confirm": confirmResponse,
+        }
+
+        c.JSON(http.StatusOK, response)
+    }
+}
+
+func (h *OnestBPPHandler) processSelect(payload selectrequest.SeekerSelectPayload) (interface{}, error) {
+    // Convert apply payload to select payload
+    selectPayload := selectrequest.SeekerSelectPayload{
+        WorkerID:   payload.WorkerID,
+        ProviderID: payload.ProviderID,
+        JobID:      payload.JobID,
+        BppID:      payload.BppID,
+        BppURI:     payload.BppURI,
+        Location:   payload.Location,
+    }
+    var response interface{}
+    err := h.onestService.Clients.ApiClient.ApiCall(selectPayload, config.Config.BapUri + "/select", &response, "POST")
+    if err != nil {
+        return nil, fmt.Errorf("failed to call select API: %v", err)
+    }
+
+    return response, nil
+}
+
+func (h *OnestBPPHandler) processInit(payload selectrequest.SeekerSelectPayload) (interface{}, error) {
+    // Convert apply payload to init payload
+    initPayload := initrequest.SeekerInitPayload{
+        WorkerID:   payload.WorkerID,
+        ProviderID: payload.ProviderID,
+        JobID:      payload.JobID,
+        BppID:      payload.BppID,
+        BppURI:     payload.BppURI,
+        Location:   payload.Location,
+    }
+
+    var response interface{}
+    err := h.onestService.Clients.ApiClient.ApiCall(initPayload, config.Config.BapUri + "/init", &response, "POST")
+    if err != nil {
+        return nil, fmt.Errorf("failed to call init API: %v", err)
+    }
+
+    return response, nil
+}
+
+func (h *OnestBPPHandler) processConfirm(payload selectrequest.SeekerSelectPayload) (interface{}, error) {
+    // Convert apply payload to confirm payload
+    confirmPayload := confirmrequest.SeekerConfirmPayload{
+        WorkerID:   payload.WorkerID,
+        ProviderID: payload.ProviderID,
+        JobID:      payload.JobID,
+        BppID:      payload.BppID,
+        BppURI:     payload.BppURI,
+        Location:   payload.Location,
+    }
+
+    var response interface{}
+    err := h.onestService.Clients.ApiClient.ApiCall(confirmPayload, config.Config.BapUri + "/confirm", &response, "POST")
+    if err != nil {
+        return nil, fmt.Errorf("failed to call confirm API: %v", err)
+    }
+
+    return response, nil
+}
+
 func (h *OnestBPPHandler) Select() gin.HandlerFunc {
+
     return func(c *gin.Context) {
         var payload selectrequest.SeekerSelectPayload
         if err := c.ShouldBindJSON(&payload); err != nil {
