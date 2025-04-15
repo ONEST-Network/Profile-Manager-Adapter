@@ -299,21 +299,21 @@ func (h *OnestBPPHandler) Apply() gin.HandlerFunc {
         // Step 1: Select
         _, err := h.processSelect(payload)
         if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"step": "select", "error": err.Error()})
+            c.JSON(http.StatusInternalServerError, gin.H{"step": "failed to call select API", "error": err.Error()})
             return
         }
 
         // Step 2: Init
         _, err = h.processInit(payload)
         if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"step": "init", "error": err.Error()})
+            c.JSON(http.StatusInternalServerError, gin.H{"step": "failed to call init API", "error": err.Error()})
             return
         }
 
         // Step 3: Confirm
         confirmResponse, err := h.processConfirm(payload)
         if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"step": "confirm", "error": err.Error()})
+            c.JSON(http.StatusInternalServerError, gin.H{"step": "failed to call confirm API", "error": err.Error()})
             return
         }
 

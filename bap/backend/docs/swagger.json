@@ -525,6 +525,56 @@
                 }
             }
         },
+        "/apply": {
+            "post": {
+                "description": "Apply job",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Worker"
+                ],
+                "summary": "Apply job",
+                "parameters": [
+                    {
+                        "description": "request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.SeekerSelectPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ConfirmResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "examples": {
+                                        "select": "failed to call select API",
+                                        "init": "failed to call init API",
+                                        "confirm": "failed to call confirm API"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/init": {
             "post": {
                 "description": "Initialize job application",
@@ -3208,6 +3258,73 @@
                 },
                 "street": {
                     "type": "string"
+                }
+            }
+        },
+        "response.Form": {
+            "type": "object",
+            "properties": {
+                "mime_type": {
+                    "type": "string"
+                },
+                "resubmit": {
+                    "type": "boolean"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.Head": {
+            "type": "object",
+            "properties": {
+                "descriptor": {
+                    "$ref": "#/definitions/response.HeadDescriptor"
+                },
+                "headings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "index": {
+                    "$ref": "#/definitions/response.Index"
+                }
+            }
+        },
+        "response.HeadDescriptor": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.Index": {
+            "type": "object",
+            "properties": {
+                "cur": {
+                    "type": "integer"
+                },
+                "max": {
+                    "type": "integer"
+                },
+                "min": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.Xinput": {
+            "type": "object",
+            "properties": {
+                "form": {
+                    "$ref": "#/definitions/response.Form"
+                },
+                "head": {
+                    "$ref": "#/definitions/response.Head"
+                },
+                "required": {
+                    "type": "boolean"
                 }
             }
         }
