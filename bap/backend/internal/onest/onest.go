@@ -178,19 +178,6 @@ func (j *Onest) SendJobFulfillmentAck(body io.ReadCloser) (*selectresponse.Selec
 		return nil, getError("No items found", ".message.order.items", "30004")
 	}
 
-	jobs, err := j.clients.JobClient.ListJobs(bson.D{{Key: "id", Value: payload.Message.Order.Items[0].ID}})
-	if err != nil {
-		return nil, getError(err.Error(), "", "")
-	}
-
-	if jobs == nil {
-		return nil, getError("No job found for id: "+payload.Message.Order.Items[0].ID, "", "30004")
-	}
-
-	if jobs[0].Vacancies == 0 {
-		return nil, getError("No vacancies available for job: "+jobs[0].ID, "", "40002")
-	}
-
 	return &payload, &selectresponseack.SelectResponseAck{
 		Message: selectresponseack.Message{
 			Ack: selectresponseack.Ack{

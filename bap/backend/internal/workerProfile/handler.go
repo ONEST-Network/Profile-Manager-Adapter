@@ -25,20 +25,20 @@ func NewWorkerProfile(clients *clients.Clients) Interface {
 }
 
 func (b *WorkerProfile) AddWorkerProfile(payload *workerProfilePayload.AddWorkerProfileRequest) error {
-	logrus.Infof("[Request]: Received request to add a new business: %s", payload.Name)
+	logrus.Infof("[Request]: Received request to add a new worker profile: %s", payload.Name)
 
-	businesses, err := b.clients.WorkerProfileClient.ListWorkerProfile(bson.D{{Key: "id", Value: payload.ID}})
+	workers, err := b.clients.WorkerProfileClient.ListWorkerProfile(bson.D{{Key: "id", Value: payload.ID}})
 	if err != nil {
 		logrus.Errorf("Failed to get worker profile with id %s, %v", payload.ID, err)
 		return fmt.Errorf("failed to get worker profile with id %s, %v", payload.ID, err)
 	}
 
-	if len(businesses) > 0 {
+	if len(workers) > 0 {
 		logrus.Errorf("worker profile with id %s already exists", payload.ID)
 		return fmt.Errorf("worker profile with id %s already exists", payload.ID)
 	}
 
-	var business = &workerProfileDb.WorkerProfile{
+	var worker = &workerProfileDb.WorkerProfile{
 		ID:             payload.ID,
 		Name:           payload.Name,
 		Phone:          payload.Phone,
@@ -52,9 +52,11 @@ func (b *WorkerProfile) AddWorkerProfile(payload *workerProfilePayload.AddWorker
 		Skills:        payload.Skills,
 		Certifications: payload.Certifications,
 		Credentials:    payload.Credentials,
+		ApplicantionID: make(map[string]string),
+		ActiveJobApplications: make(map[string]workerProfileDb.ActiveJobApplications),
 	}
 
-	if err := b.clients.WorkerProfileClient.CreateWorkerProfile(business); err != nil {
+	if err := b.clients.WorkerProfileClient.CreateWorkerProfile(worker); err != nil {
 		logrus.Errorf("Failed to create %s worker profile, %v", payload.ID, err)
 		return fmt.Errorf("failed to create %s worker profile, %v", payload.ID, err)
 	}
