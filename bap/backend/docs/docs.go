@@ -505,7 +505,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/reuqest.SeekerStatusPayload"
+                            "$ref": "#/definitions/request.SeekerStatusPayload"
                         }
                     }
                 ],
