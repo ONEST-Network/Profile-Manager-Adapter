@@ -1,18 +1,15 @@
 package request
 
 type SeekerCancelPayload struct {
-	WorkerID string              `json:"worker_id,omitempty"`
-	BppID   string              `json:"bpp_id,omitempty"`
-	BppURI  string              `json:"bpp_uri,omitempty"`
-	Location SelectedJobLocation `json:"location,omitempty"`
+	WorkerID      string              `json:"worker_id,omitempty"`
 	ApplicationID string              `json:"application_id,omitempty"`
-	JobID 	  string              `json:"job_id,omitempty"`
+	JobID         string              `json:"job_id,omitempty"`
 }
 
 type SelectedJobLocation struct {
-	City    string `json:"city"`
-	State   string `json:"state"`
-	Country string `json:"country"`
+	City        string      `json:"city"`
+	State       string      `json:"state"`
+	Country     string      `json:"country"`
 	AreaCode    string      `json:"area_code"`
 	Coordinates Coordinates `json:"coordinates"`
 }

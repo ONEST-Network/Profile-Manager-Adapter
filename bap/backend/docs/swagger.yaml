@@ -483,25 +483,6 @@ definitions:
         type: string
       worker_id:
         type: string
-      bpp_id:
-        type: string
-      bpp_uri:
-        type: string
-      location:
-        $ref: "#/definitions/request.SelectedJobLocation"
-  request.SelectedJobLocation:
-    type: object
-    properties:
-      city:
-        type: string
-      country:
-        type: string
-      state:
-        type: string
-      area_code:
-        type: string
-      coordinates:
-        $ref: "#/definitions/request.Coordinates"
   request.SeekerConfirmPayload:
     type: object
     properties:
@@ -509,14 +490,6 @@ definitions:
         type: string
       job_id:
         type: string
-      provider_id:
-        type: string
-      bpp_id:
-        type: string
-      bpp_uri:
-        type: string
-      location:
-        $ref: "#/definitions/request.SelectedJobLocation"
   request.SeekerStatusPayload:
     type: object
     properties:
@@ -524,12 +497,6 @@ definitions:
         type: string
       worker_id:
         type: string
-      bpp_id:
-        type: string
-      bpp_uri:
-        type: string
-      location:
-        $ref: "#/definitions/request.SelectedJobLocation"
   request.SeekerSelectPayload:
     type: object
     properties:
@@ -537,14 +504,6 @@ definitions:
         type: string
       job_id:
         type: string
-      provider_id:
-        type: string
-      bpp_id:
-        type: string
-      bpp_uri:
-        type: string
-      location:
-        $ref: "#/definitions/request.SelectedJobLocation"
   request.SeekerInitPayload:
     type: object
     properties:
@@ -552,14 +511,6 @@ definitions:
         type: string
       job_id:
         type: string
-      provider_id:
-        type: string
-      bpp_id:
-        type: string
-      bpp_uri:
-        type: string
-      location:
-        $ref: "#/definitions/request.SelectedJobLocation"
   request.SeekerSearchPayload:
     type: object
     properties:

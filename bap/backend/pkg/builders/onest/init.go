@@ -11,7 +11,7 @@ import (
 	"github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/pkg/utils"
 )
 
-func BuildBPPInitJobRequest(payload initrequest.SeekerInitPayload, transactionId, messageId, bppId, bppuri string, worker *workerProfile.WorkerProfile) (*initrequest.InitRequest, error) {
+func BuildBPPInitJobRequest(payload initrequest.SeekerInitPayload, transactionId, messageId, bppId, bppuri string, worker *workerProfile.WorkerProfile, providerId, jobCityCode, jobCountryCode string) (*initrequest.InitRequest, error) {
 	languages, err := getInitLanguages(worker)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get seeker languages: %v", err)
@@ -31,17 +31,17 @@ func BuildBPPInitJobRequest(payload initrequest.SeekerInitPayload, transactionId
 			TTL:           "PT30S",
 			Location: initrequest.Location{
 				City: initrequest.City{
-					Code: payload.Location.City,
+					Code: jobCityCode,
 				},
 				Country: initrequest.Country{
-					Code: payload.Location.Country,
+					Code: jobCountryCode,
 				},
 			},
 		},
 		Message: initrequest.Message{
 			Order: initrequest.Order{
 				Provider: initrequest.Provider{
-					ID: payload.ProviderID,
+					ID: providerId,
 				},
 				Fulfillments: []initrequest.Fulfillments{
 					{

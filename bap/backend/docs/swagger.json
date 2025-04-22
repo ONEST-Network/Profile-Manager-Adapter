@@ -713,34 +713,8 @@
                 "application_id": {
                     "type": "string"
                 },
-                "bpp_id": {
+                "worker_id": {
                     "type": "string"
-                },
-                "bpp_uri": {
-                    "type": "string"
-                },
-                "location": {
-                    "$ref": "#/definitions/request.SelectedJobLocation"
-                }
-            }
-        },
-        "request.SelectedJobLocation": {
-            "type": "object",
-            "properties": {
-                "city": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
-                },
-                "area_code": {
-                    "type": "string"
-                },
-                "coordinates": {
-                    "$ref": "#/definitions/request.Coordinates"
                 }
             }
         },
@@ -752,18 +726,6 @@
                 },
                 "job_id": {
                     "type": "string"
-                },
-                "provider_id": {
-                    "type": "string"
-                },
-                "bpp_id": {
-                    "type": "string"
-                },
-                "bpp_uri": {
-                    "type": "string"
-                },
-                "location": {
-                    "$ref": "#/definitions/request.SelectedJobLocation"
                 }
             }
         },
@@ -775,15 +737,6 @@
                 },
                 "worker_id": {
                     "type": "string"
-                },
-                "bpp_id": {
-                    "type": "string"
-                },
-                "bpp_uri": {
-                    "type": "string"
-                },
-                "location": {
-                    "$ref": "#/definitions/request.SelectedJobLocation"
                 }
             }
         },
@@ -795,18 +748,6 @@
                 },
                 "job_id": {
                     "type": "string"
-                },
-                "provider_id": {
-                    "type": "string"
-                },
-                "bpp_id": {
-                    "type": "string"
-                },
-                "bpp_uri": {
-                    "type": "string"
-                },
-                "location": {
-                    "$ref": "#/definitions/request.SelectedJobLocation"
                 }
             }
         },
@@ -818,18 +759,6 @@
                 },
                 "job_id": {
                     "type": "string"
-                },
-                "provider_id": {
-                    "type": "string"
-                },
-                "bpp_id": {
-                    "type": "string"
-                },
-                "bpp_uri": {
-                    "type": "string"
-                },
-                "location": {
-                    "$ref": "#/definitions/request.SelectedJobLocation"
                 }
             }
         },

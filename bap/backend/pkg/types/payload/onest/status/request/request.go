@@ -2,9 +2,6 @@ package request
 
 type SeekerStatusPayload struct {
 	WorkerID      string              `json:"worker_id,omitempty"`
-	BppID         string              `json:"bpp_id,omitempty"`
-	BppURI        string              `json:"bpp_uri,omitempty"`
-	Location      SelectedJobLocation `json:"location,omitempty"`
 	ApplicationID string              `json:"application_id,omitempty"`
 }
 

@@ -1,14 +1,8 @@
 package request
 
-import selectrequest "github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/pkg/types/payload/onest/select/request"
-
 type SeekerConfirmPayload struct {
 	WorkerID string              `json:"worker_id,omitempty"`
-	ProviderID string            `json:"provider_id,omitempty"`
 	JobID    string              `json:"job_id,omitempty"`
-	BppID   string              `json:"bpp_id,omitempty"`
-	BppURI  string              `json:"bpp_uri,omitempty"`
-	Location selectrequest.SelectedJobLocation `json:"location,omitempty"`
 }
 
 type Coordinates struct {

@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func BuildBPPConfirmJobRequest(payload confirmrequest.SeekerConfirmPayload, transactionId, messageId, bppId, bppuri string, worker *workerProfile.WorkerProfile) (*confirmrequest.ConfirmRequest, error) {
+func BuildBPPConfirmJobRequest(payload confirmrequest.SeekerConfirmPayload, transactionId, messageId, bppId, bppuri string, worker *workerProfile.WorkerProfile, providerId, jobCityCode, jobCountryCode string) (*confirmrequest.ConfirmRequest, error) {
 	languages, err := getConfirmLanguages(worker)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get seeker languages: %v", err)
@@ -32,10 +32,10 @@ func BuildBPPConfirmJobRequest(payload confirmrequest.SeekerConfirmPayload, tran
 			TTL:           "PT30S",
 			Location: confirmrequest.Location{
 				City: confirmrequest.City{
-					Code: payload.Location.City,
+					Code: jobCityCode,
 				},
 				Country: confirmrequest.Country{
-					Code: payload.Location.Country,
+					Code: jobCountryCode,
 				},
 			},
 		},
@@ -43,7 +43,7 @@ func BuildBPPConfirmJobRequest(payload confirmrequest.SeekerConfirmPayload, tran
 			Order: confirmrequest.Order{
 				ID: uuid.New().String(),
 				Provider: confirmrequest.Provider{
-					ID: payload.ProviderID,
+					ID: providerId,
 				},
 				Fulfillments: []confirmrequest.Fulfillments{
 					{

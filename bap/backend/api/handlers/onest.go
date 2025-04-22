@@ -330,11 +330,7 @@ func (h *OnestBPPHandler) processSelect(payload selectrequest.SeekerSelectPayloa
     // Convert apply payload to select payload
     selectPayload := selectrequest.SeekerSelectPayload{
         WorkerID:   payload.WorkerID,
-        ProviderID: payload.ProviderID,
         JobID:      payload.JobID,
-        BppID:      payload.BppID,
-        BppURI:     payload.BppURI,
-        Location:   payload.Location,
     }
     var response interface{}
     err := h.onestService.Clients.ApiClient.ApiCall(selectPayload, config.Config.BapUri + "/select", &response, "POST")
@@ -349,11 +345,7 @@ func (h *OnestBPPHandler) processInit(payload selectrequest.SeekerSelectPayload)
     // Convert apply payload to init payload
     initPayload := initrequest.SeekerInitPayload{
         WorkerID:   payload.WorkerID,
-        ProviderID: payload.ProviderID,
         JobID:      payload.JobID,
-        BppID:      payload.BppID,
-        BppURI:     payload.BppURI,
-        Location:   payload.Location,
     }
 
     var response interface{}
@@ -369,11 +361,7 @@ func (h *OnestBPPHandler) processConfirm(payload selectrequest.SeekerSelectPaylo
     // Convert apply payload to confirm payload
     confirmPayload := confirmrequest.SeekerConfirmPayload{
         WorkerID:   payload.WorkerID,
-        ProviderID: payload.ProviderID,
         JobID:      payload.JobID,
-        BppID:      payload.BppID,
-        BppURI:     payload.BppURI,
-        Location:   payload.Location,
     }
 
     var response interface{}
@@ -402,7 +390,45 @@ func (h *OnestBPPHandler) Select() gin.HandlerFunc {
             }
             workerTransactionId := worker.TransactionID
             workerMessageId := worker.MessageID
-
+            bpp_id := ""
+            bpp_uri := ""
+            providerId := ""
+            jobCityCode := ""
+            jobCountryCode := ""
+            // Check if job exists in search response
+            searchJobResponse, err := h.onestService.Clients.SearchReponseClient.GetSearchJobResponse(workerTransactionId)
+            if err != nil {
+                logrus.Errorf("Failed to get search job response for transaction ID %s: %v", workerTransactionId, err)
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                return
+            }
+            // Verify if the job exists in the search response
+            jobExists := false
+            if searchJobResponse != nil && len(searchJobResponse.JobsResponse) > 0 {
+                // Check first response's providers
+                response := searchJobResponse.JobsResponse[0].Message.Catalog
+                for _, provider := range response.Providers {
+                    for _, item := range provider.Items {
+                        if item.ID == payload.JobID {
+                            jobExists = true
+                            bpp_id = searchJobResponse.JobsResponse[0].Context.BppID
+                            bpp_uri = searchJobResponse.JobsResponse[0].Context.BppURI
+                            providerId = provider.ID
+                            jobCityCode = item.Creator.City.Code
+                            jobCountryCode = searchJobResponse.JobsResponse[0].Context.Location.Country.Code
+                            break
+                        }
+                    }
+                    if jobExists {
+                        break
+                    }
+                }
+            }
+            if !jobExists {
+                logrus.Errorf("Job ID %s not found in search response for transaction ID %s", payload.JobID, workerTransactionId)
+                c.JSON(http.StatusNotFound, gin.H{"error": "Job not found in search results"})
+                return
+            }
             activeJobApplication, exists := worker.ActiveJobApplications[payload.JobID]
             if !exists {
                 // This means the job ID doesn't exist in active applications
@@ -410,8 +436,8 @@ func (h *OnestBPPHandler) Select() gin.HandlerFunc {
                 updateFields := bson.D{{Key: "$set", Value: bson.D{
                     {Key: "active_job_applications." + payload.JobID, Value: bson.M{
                         "transaction_id": workerTransactionId,
-                        "bpp_id": payload.BppID,
-                        "bpp_uri": payload.BppURI,
+                        "bpp_id": bpp_id,
+                        "bpp_uri": bpp_uri,
                     }},
                 }}}
                 
@@ -429,7 +455,7 @@ func (h *OnestBPPHandler) Select() gin.HandlerFunc {
                 }
             }
 
-            parsedRequest, err := builders.BuildBPPSelectJobRequest(payload, workerTransactionId, workerMessageId, payload.BppID, payload.BppURI)
+            parsedRequest, err := builders.BuildBPPSelectJobRequest(payload, workerTransactionId, workerMessageId, bpp_id, bpp_uri, providerId, jobCityCode, jobCountryCode)
             if err != nil {
                 logrus.Errorf("Failed to parse select job request, %v", err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -547,7 +573,57 @@ func (h *OnestBPPHandler) Init() gin.HandlerFunc {
                 c.JSON(http.StatusConflict, gin.H{"error": "Job application has already been submitted"})
                 return
             }
-            parsedRequest, err := builders.BuildBPPInitJobRequest(payload, worker.TransactionID, worker.MessageID, payload.BppID, payload.BppURI, worker)
+
+            bpp_id := ""
+            bpp_uri := ""
+            providerId := ""
+            jobCityCode := ""
+            jobCountryCode := ""
+            // Check if job exists in select response
+            selectJobResponse, err := h.onestService.Clients.SearchReponseClient.GetSearchJobResponse(worker.TransactionID)
+            if err != nil {
+                logrus.Errorf("Failed to get select job response for transaction ID %s: %v", worker.TransactionID, err)
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                return
+            }
+            // Verify if the job exists in the select response
+            jobExists := false
+            if selectJobResponse != nil && len(selectJobResponse.SelectJobResponse) > 0 {
+                response := selectJobResponse.SelectJobResponse[0].Message.Order
+                for _, item := range response.Items {
+                    if item.ID == payload.JobID {
+                        jobExists = true
+                        bpp_id = selectJobResponse.SelectJobResponse[0].Context.BppID
+                        bpp_uri = selectJobResponse.SelectJobResponse[0].Context.BppURI
+                        providerId = response.Provider.ID
+                        break
+                    }
+                    if jobExists {
+                        break
+                    }
+                }
+                jobExists = false 
+                for _, provider := range selectJobResponse.JobsResponse[0].Message.Catalog.Providers {
+                    for _, item := range provider.Items {
+                        if item.ID == payload.JobID {
+                            jobExists = true
+                            jobCityCode = item.Creator.City.Code
+                            jobCountryCode = selectJobResponse.JobsResponse[0].Context.Location.Country.Code
+                            break
+                        }
+                    }
+                    if jobExists {
+                        break
+                    }
+                }
+            }
+            if !jobExists {
+                logrus.Errorf("Job ID %s not found in select response for transaction ID %s", payload.JobID, worker.TransactionID)
+                c.JSON(http.StatusNotFound, gin.H{"error": "Job not found in select results"})
+                return
+            }
+
+            parsedRequest, err := builders.BuildBPPInitJobRequest(payload, worker.TransactionID, worker.MessageID, bpp_id, bpp_uri, worker, providerId, jobCityCode, jobCountryCode)
             if err != nil {
                 logrus.Errorf("Failed to parse init job request, %v", err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -662,7 +738,58 @@ func (h *OnestBPPHandler) Confirm() gin.HandlerFunc {
                 c.JSON(http.StatusConflict, gin.H{"error": "Job application has already been confirmed"})
                 return
             }
-            parsedRequest, err := builders.BuildBPPConfirmJobRequest(payload, worker.TransactionID, worker.MessageID, payload.BppID, payload.BppURI, worker)
+
+            bpp_id := ""
+            bpp_uri := ""
+            providerId := ""
+            jobCityCode := ""
+            jobCountryCode := ""
+            // Check if job exists in init response
+            initJobResponse, err := h.onestService.Clients.SearchReponseClient.GetSearchJobResponse(worker.TransactionID)
+            if err != nil {
+                logrus.Errorf("Failed to get init job response for transaction ID %s: %v", worker.TransactionID, err)
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                return
+            }
+            // Verify if the job exists in the init response
+            jobExists := false
+            if initJobResponse != nil && len(initJobResponse.InitJobResponse) > 0 {
+                // Check first response's providers
+                response := initJobResponse.InitJobResponse[0].Message.Order
+                for _, item := range response.Items {
+                    if item.ID == payload.JobID {
+                        jobExists = true
+                        bpp_id = initJobResponse.InitJobResponse[0].Context.BppID
+                        bpp_uri = initJobResponse.InitJobResponse[0].Context.BppURI
+                        providerId = response.Provider.ID
+                        break
+                    }
+                    if jobExists {
+                        break
+                    }
+                }
+                jobExists = false 
+                for _, provider := range initJobResponse.JobsResponse[0].Message.Catalog.Providers {
+                    for _, item := range provider.Items {
+                        if item.ID == payload.JobID {
+                            jobExists = true
+                            jobCityCode = item.Creator.City.Code
+                            jobCountryCode = initJobResponse.JobsResponse[0].Context.Location.Country.Code
+                            break
+                        }
+                    }
+                    if jobExists {
+                        break
+                    }
+                }
+            }
+            if !jobExists {
+                logrus.Errorf("Job ID %s not found in init response for transaction ID %s", payload.JobID, worker.TransactionID)
+                c.JSON(http.StatusNotFound, gin.H{"error": "Job not found in init results"})
+                return
+            }
+
+            parsedRequest, err := builders.BuildBPPConfirmJobRequest(payload, worker.TransactionID, worker.MessageID, bpp_id, bpp_uri, worker, providerId, jobCityCode, jobCountryCode)
             if err != nil {
                 logrus.Errorf("Failed to parse confirm job request, %v", err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -782,7 +909,51 @@ func (h *OnestBPPHandler) Status() gin.HandlerFunc {
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
                 return
             }
-            parsedRequest, err := builders.BuildBPPStatusJobRequest(payload, payload.BppID, payload.BppURI, worker)
+
+            bpp_id := ""
+            bpp_uri := ""
+            jobCityCode := ""
+            jobCountryCode := ""
+            jobId := ""
+            // Check if job exists in confirm response
+            confirmJobResponse, err := h.onestService.Clients.SearchReponseClient.GetSearchJobResponse(worker.TransactionID)
+            if err != nil {
+                logrus.Errorf("Failed to get confirm job response for transaction ID %s: %v", worker.TransactionID, err)
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                return
+            }
+            // Verify if the job exists in the confirm response
+            applicationExists := false
+            if confirmJobResponse != nil && len(confirmJobResponse.ConfirmJobResponse) > 0 {
+                response := confirmJobResponse.ConfirmJobResponse[0].Message.Order
+                if response.ID == payload.ApplicationID {
+                    applicationExists = true
+                    bpp_id = confirmJobResponse.ConfirmJobResponse[0].Context.BppID
+                    bpp_uri = confirmJobResponse.ConfirmJobResponse[0].Context.BppURI
+                    jobId = response.Items[0].ID
+                }
+                jobExists := false 
+                for _, provider := range confirmJobResponse.JobsResponse[0].Message.Catalog.Providers {
+                    for _, item := range provider.Items {
+                        if item.ID == jobId {
+                            jobExists = true
+                            jobCityCode = item.Creator.City.Code
+                            jobCountryCode = confirmJobResponse.JobsResponse[0].Context.Location.Country.Code
+                            break
+                        }
+                    }
+                    if jobExists {
+                        break
+                    }
+                }
+            }
+            if !applicationExists {
+                logrus.Errorf("Application ID %s not found in init response for transaction ID %s", payload.ApplicationID, worker.TransactionID)
+                c.JSON(http.StatusNotFound, gin.H{"error": "Application not found in confirm results"})
+                return
+            }
+
+            parsedRequest, err := builders.BuildBPPStatusJobRequest(payload, bpp_id, bpp_uri, worker, jobCityCode, jobCountryCode)
             if err != nil {
                 logrus.Errorf("Failed to parse status job request, %v", err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -884,7 +1055,49 @@ func (h *OnestBPPHandler) Cancel() gin.HandlerFunc {
                 c.JSON(http.StatusConflict, gin.H{"error": "Job application has already been cancelled"})
                 return
             }
-            parsedRequest, err := builders.BuildBPPCancelJobRequest(payload, payload.BppID, payload.BppURI, worker)
+
+            bpp_id := ""
+            bpp_uri := ""
+            jobCityCode := ""
+            jobCountryCode := ""
+            // Check if job exists in status response
+            statusJobResponse, err := h.onestService.Clients.SearchReponseClient.GetSearchJobResponse(worker.TransactionID)
+            if err != nil {
+                logrus.Errorf("Failed to get status job response for transaction ID %s: %v", worker.TransactionID, err)
+                c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+                return
+            }
+            // Verify if the job exists in the status response
+            applicationExists := false
+            if statusJobResponse != nil && len(statusJobResponse.StatusJobResponse) > 0 {
+                response := statusJobResponse.StatusJobResponse[0].Message.Order
+                if response.ID == payload.ApplicationID {
+                    applicationExists = true
+                    bpp_id = statusJobResponse.StatusJobResponse[0].Context.BppID
+                    bpp_uri = statusJobResponse.StatusJobResponse[0].Context.BppURI
+                }
+                jobExists := false 
+                for _, provider := range statusJobResponse.JobsResponse[0].Message.Catalog.Providers {
+                    for _, item := range provider.Items {
+                        if item.ID == payload.JobID {
+                            jobExists = true
+                            jobCityCode = item.Creator.City.Code
+                            jobCountryCode = statusJobResponse.JobsResponse[0].Context.Location.Country.Code
+                            break
+                        }
+                    }
+                    if jobExists {
+                        break
+                    }
+                }
+            }
+            if !applicationExists {
+                logrus.Errorf("Application ID %s not found in status response for transaction ID %s", payload.ApplicationID, worker.TransactionID)
+                c.JSON(http.StatusNotFound, gin.H{"error": "Application not found in status results"})
+                return
+            }
+
+            parsedRequest, err := builders.BuildBPPCancelJobRequest(payload, bpp_id, bpp_uri, worker, jobCityCode, jobCountryCode)
             if err != nil {
                 logrus.Errorf("Failed to parse cancel job request, %v", err)
                 c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

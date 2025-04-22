@@ -52,7 +52,6 @@ func (b *WorkerProfile) AddWorkerProfile(payload *workerProfilePayload.AddWorker
 		Skills:        payload.Skills,
 		Certifications: payload.Certifications,
 		Credentials:    payload.Credentials,
-		ApplicantionID: make(map[string]string),
 		ActiveJobApplications: make(map[string]workerProfileDb.ActiveJobApplications),
 	}
 

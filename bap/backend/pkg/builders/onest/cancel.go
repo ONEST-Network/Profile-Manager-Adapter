@@ -9,7 +9,7 @@ import (
 	cancelrequest "github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/pkg/types/payload/onest/cancel/request"
 )
 
-func BuildBPPCancelJobRequest(payload cancelrequest.SeekerCancelPayload, bppId, bppuri string, worker *workerProfile.WorkerProfile) (*cancelrequest.CancelRequest, error) {
+func BuildBPPCancelJobRequest(payload cancelrequest.SeekerCancelPayload, bppId, bppuri string, worker *workerProfile.WorkerProfile, jobCityCode, jobCountryCode string) (*cancelrequest.CancelRequest, error) {
 	req := cancelrequest.CancelRequest{
 		Context: cancelrequest.Context{
 			Domain:        "ONDC:ONEST10",
@@ -25,10 +25,10 @@ func BuildBPPCancelJobRequest(payload cancelrequest.SeekerCancelPayload, bppId, 
 			TTL:           "PT30S",
 			Location: cancelrequest.Location{
 				City: cancelrequest.City{
-					Code: payload.Location.City,
+					Code: jobCityCode,
 				},
 				Country: cancelrequest.Country{
-					Code: payload.Location.Country,
+					Code: jobCountryCode,
 				},
 			},
 		},

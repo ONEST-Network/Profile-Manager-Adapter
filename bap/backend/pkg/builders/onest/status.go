@@ -8,7 +8,7 @@ import (
 	statusrequest "github.com/ONEST-Network/Whatsapp-Chatbot/bap/backend/pkg/types/payload/onest/status/request"
 )
 
-func BuildBPPStatusJobRequest(payload statusrequest.SeekerStatusPayload, bppId, bppuri string, worker *workerProfile.WorkerProfile) (*statusrequest.StatusRequest, error) {
+func BuildBPPStatusJobRequest(payload statusrequest.SeekerStatusPayload, bppId, bppuri string, worker *workerProfile.WorkerProfile, jobCityCode, jobCountryCode string) (*statusrequest.StatusRequest, error) {
 	req := statusrequest.StatusRequest{
 		Context: statusrequest.Context{
 			Domain:        "ONDC:ONEST10",
@@ -24,10 +24,10 @@ func BuildBPPStatusJobRequest(payload statusrequest.SeekerStatusPayload, bppId, 
 			TTL:           "PT30S",
 			Location: statusrequest.Location{
 				City: statusrequest.City{
-					Code: payload.Location.City,
+					Code: jobCityCode,
 				},
 				Country: statusrequest.Country{
-					Code: payload.Location.Country,
+					Code: jobCountryCode,
 				},
 			},
 		},

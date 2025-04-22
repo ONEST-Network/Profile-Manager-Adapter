@@ -727,35 +727,6 @@ const docTemplate = `{
                 },
                 "worker_id": {
                     "type": "string"
-                },
-                "bpp_id": {
-                    "type": "string"
-                },
-                "bpp_uri": {
-                    "type": "string"
-                },
-                "location": {
-                    "$ref": "#/definitions/request.SelectedJobLocation"
-                }
-            }
-        },
-        "request.SelectedJobLocation": {
-            "type": "object",
-            "properties": {
-                "city": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
-                },
-                "area_code": {
-                    "type": "string"
-                },
-                "coordinates": {
-                    "$ref": "#/definitions/request.Coordinates"
                 }
             }
         },
@@ -767,18 +738,6 @@ const docTemplate = `{
                 },
                 "job_id": {
                     "type": "string"
-                },
-                "provider_id": {
-                    "type": "string"
-                },
-                "bpp_id": {
-                    "type": "string"
-                },
-                "bpp_uri": {
-                    "type": "string"
-                },
-                "location": {
-                    "$ref": "#/definitions/request.SelectedJobLocation"
                 }
             }
         },
@@ -790,15 +749,6 @@ const docTemplate = `{
                 },
                 "worker_id": {
                     "type": "string"
-                },
-                "bpp_id": {
-                    "type": "string"
-                },
-                "bpp_uri": {
-                    "type": "string"
-                },
-                "location": {
-                    "$ref": "#/definitions/request.SelectedJobLocation"
                 }
             }
         },
@@ -810,18 +760,6 @@ const docTemplate = `{
                 },
                 "job_id": {
                     "type": "string"
-                },
-                "provider_id": {
-                    "type": "string"
-                },
-                "bpp_id": {
-                    "type": "string"
-                },
-                "bpp_uri": {
-                    "type": "string"
-                },
-                "location": {
-                    "$ref": "#/definitions/request.SelectedJobLocation"
                 }
             }
         },
@@ -833,18 +771,6 @@ const docTemplate = `{
                 },
                 "job_id": {
                     "type": "string"
-                },
-                "provider_id": {
-                    "type": "string"
-                },
-                "bpp_id": {
-                    "type": "string"
-                },
-                "bpp_uri": {
-                    "type": "string"
-                },
-                "location": {
-                    "$ref": "#/definitions/request.SelectedJobLocation"
                 }
             }
         },

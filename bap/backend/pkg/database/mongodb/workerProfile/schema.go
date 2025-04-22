@@ -17,7 +17,6 @@ type WorkerProfile struct {
 	Location           Location          `bson:"location"`
 	TransactionID      string            `bson:"last_transaction_id"`
 	MessageID          string            `bson:"message_id"`
-	ApplicantionID     map[string]string `bson:"application_id"`
 	ActiveJobApplications map[string]ActiveJobApplications `bson:"active_job_applications"` 
 }
 
