@@ -1,0 +1,865 @@
+basePath: /api/v1
+definitions:
+  models.AcademicQualification:
+    enum:
+    - None
+    - Class-X
+    - Class-XII
+    - Diploma
+    - Graduate
+    - Post-Graduate
+    type: string
+    x-enum-varnames:
+    - AcademicQualificationNone
+    - AcademicQualificationClassX
+    - AcademicQualificationClassXII
+    - AcademicQualificationDiploma
+    - AcademicQualificationGraduate
+    - AcademicQualificationPostGraduate
+  models.Address:
+    properties:
+      city:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      pincode:
+        type: string
+      state:
+        type: string
+      street:
+        type: string
+      type:
+        description: permanent, current
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.AddressInput:
+    properties:
+      city:
+        example: Kolkata
+        type: string
+      country:
+        example: India
+        type: string
+      pincode:
+        example: "700001"
+        type: string
+      state:
+        example: West Bengal
+        type: string
+      street:
+        example: 123 Main St
+        type: string
+      type:
+        description: e.g., permanent, current
+        example: permanent
+        type: string
+    type: object
+  models.Application:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_draft:
+        type: boolean
+      scheme_id:
+        type: integer
+      status:
+        description: status of the application (submitted, under review, approved,
+          rejected)
+        type: string
+      student_profile:
+        $ref: '#/definitions/models.StudentProfile'
+      student_profile_id:
+        type: integer
+      submitted_at:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: integer
+      verified:
+        type: boolean
+    type: object
+  models.Category:
+    enum:
+    - General
+    - SC
+    - ST
+    - OBC
+    - Other
+    type: string
+    x-enum-varnames:
+    - CategoryGeneral
+    - CategorySC
+    - CategoryST
+    - CategoryOBC
+    - CategoryOther
+  models.DocumentInput:
+    properties:
+      name:
+        example: Aadhaar Card
+        type: string
+      url:
+        example: https://example.com/documents/aadhaar_card.pdf
+        type: string
+    type: object
+  models.DocumentsRequired:
+    properties:
+      description:
+        type: string
+      name:
+        description: Unique constraint for the document name
+        type: string
+      type:
+        type: string
+    type: object
+  models.EducationHistoryInput:
+    properties:
+      course:
+        example: Physics
+        type: string
+      degree:
+        example: Bachelor of Science
+        type: string
+      grade:
+        example: First Class
+        type: string
+      university:
+        example: University of Calcutta
+        type: string
+      year_of_passing:
+        example: 2022
+        type: integer
+    type: object
+  models.Eligibility:
+    properties:
+      academic_qualification:
+        $ref: '#/definitions/models.AcademicQualification'
+      age_max:
+        type: integer
+      age_min:
+        type: integer
+      category:
+        $ref: '#/definitions/models.Category'
+      created_at:
+        type: string
+      documents_required:
+        items:
+          $ref: '#/definitions/models.EligibilityDocumentMap'
+        type: array
+      gender:
+        $ref: '#/definitions/models.Gender'
+      id:
+        type: integer
+      income_limit:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  models.EligibilityDocumentMap:
+    properties:
+      document:
+        $ref: '#/definitions/models.DocumentsRequired'
+      id:
+        type: integer
+      is_mandatory:
+        type: boolean
+    type: object
+  models.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  models.Gender:
+    enum:
+    - Male
+    - Female
+    - Other
+    type: string
+    x-enum-varnames:
+    - GenderMale
+    - GenderFemale
+    - GenderOther
+  models.InitApplicationRequest:
+    properties:
+      scheme_id:
+        type: integer
+    required:
+    - scheme_id
+    type: object
+  models.PaginationMeta:
+    properties:
+      limit:
+        example: 10
+        type: integer
+      next:
+        example: /api/v1/schemes?limit=10&page=11
+        type: string
+      page:
+        example: 10
+        type: integer
+      previous:
+        example: /api/v1/schemes?limit=10&page=9
+        type: string
+      resource_count:
+        example: 200
+        type: integer
+      total_pages:
+        example: 20
+        type: integer
+    type: object
+  models.Scheme:
+    properties:
+      amount:
+        type: number
+      application_link:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      eligibility:
+        $ref: '#/definitions/models.Eligibility'
+      eligibility_id:
+        description: foreign key to Eligibility
+        type: integer
+      end_date:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      start_date:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.SchemeResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/models.PaginationMeta'
+    type: object
+  models.StudentAcademicQualification:
+    properties:
+      course:
+        type: string
+      created_at:
+        type: string
+      degree:
+        type: string
+      grade:
+        type: string
+      university:
+        type: string
+      updated_at:
+        type: string
+      year_of_passing:
+        type: integer
+    type: object
+  models.StudentProfile:
+    properties:
+      aadhaar_number:
+        type: string
+      addresses:
+        description: List of addresses
+        items:
+          $ref: '#/definitions/models.Address'
+        type: array
+      category:
+        type: string
+      created_at:
+        type: string
+      date_of_birth:
+        description: 'Format: DD-MM-YYYY'
+        type: string
+      documents:
+        items:
+          $ref: '#/definitions/models.UploadDocument'
+        type: array
+      education_history:
+        description: Academic qualifications
+        items:
+          $ref: '#/definitions/models.StudentAcademicQualification'
+        type: array
+      email:
+        type: string
+      full_name:
+        type: string
+      gender:
+        type: string
+      income:
+        type: number
+      is_international:
+        description: Flag to mark international students
+        type: boolean
+      nationality:
+        description: Added Nationality
+        type: string
+      phone_number:
+        type: string
+      qualification:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.StudentProfileInput:
+    properties:
+      aadhaar_number:
+        example: "123456789012"
+        type: string
+      addresses:
+        items:
+          $ref: '#/definitions/models.AddressInput'
+        type: array
+      category:
+        example: General
+        type: string
+      date_of_birth:
+        description: 'Format: DD/MM/YYYY'
+        example: 01/10/2004
+        type: string
+      documents:
+        items:
+          $ref: '#/definitions/models.DocumentInput'
+        type: array
+      education_history:
+        items:
+          $ref: '#/definitions/models.EducationHistoryInput'
+        type: array
+      email:
+        example: das@gmail.com
+        type: string
+      full_name:
+        example: Chayan Das
+        type: string
+      gender:
+        example: Male
+        type: string
+      income:
+        example: 250000
+        type: number
+      is_international:
+        description: Flag to mark international students
+        example: false
+        type: boolean
+      nationality:
+        description: Added Nationality
+        example: Indian
+        type: string
+      phone_number:
+        example: "+919876543210"
+        type: string
+      qualification:
+        example: Bachelor of Science
+        type: string
+    type: object
+  models.SubmitExistingApplicationRequest:
+    properties:
+      application_id:
+        type: integer
+    required:
+    - application_id
+    type: object
+  models.SuccessResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+    type: object
+  models.UploadDocument:
+    properties:
+      created_at:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+    type: object
+  models.User:
+    properties:
+      id:
+        type: integer
+      username:
+        type: string
+    type: object
+  models.UserCreate:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: chayan_das
+        type: string
+    type: object
+info:
+  contact:
+    email: daschayan8837@gmail.com
+    name: chayan das
+    url: chayandass.com
+  description: Enter your username and password for basic authentication
+  license:
+    name: GPL-2.0-only
+    url: https://opensource.org/licenses/GPL-2.0
+  title: Beneficiary Manager API
+  version: "3.0"
+paths:
+  /applications:
+    get:
+      consumes:
+      - application/json
+      description: Fetches all applications associated with the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of applications
+          schema:
+            items:
+              $ref: '#/definitions/models.Application'
+            type: array
+        "401":
+          description: Unauthorized, user ID not found in context
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: No applications found for this user
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Failed to fetch applications
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BasicAuth: []
+      summary: Get user applications
+      tags:
+      - Applications
+    post:
+      consumes:
+      - application/json
+      description: Submits a draft application after validating its completeness.
+      parameters:
+      - description: Submit application request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SubmitExistingApplicationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Application submitted successfully
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "400":
+          description: Invalid request or application is incomplete
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized, user ID not found in context
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Application not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Failed to submit application
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BasicAuth: []
+      summary: Submit application
+      tags:
+      - Applications
+  /applications/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Updates the details of a draft application, including the student
+        profile and related data.
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Modify application request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.StudentProfileInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Application modified successfully
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized, user ID not found in context
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Cannot modify application, it is already submitted
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Application not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Failed to update application
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BasicAuth: []
+      summary: Modify application
+      tags:
+      - Applications
+  /applications/init-application:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new draft application for a specific scheme.
+      parameters:
+      - description: Initialize application request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.InitApplicationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Application initialized successfully
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized, user ID not found in context
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Scheme not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "409":
+          description: Application already exists
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Failed to initialize application
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BasicAuth: []
+      summary: Initialize application
+      tags:
+      - Applications
+  /applications/status/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Fetches the status of an application based on the application ID
+        and the authenticated user's ID.
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Application status fetched successfully
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "401":
+          description: Unauthorized, user ID not found in context
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Application not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BasicAuth: []
+      summary: Get application status
+      tags:
+      - Applications
+  /applications/withdraw-application:
+    post:
+      consumes:
+      - application/json
+      description: Withdraws a submitted application and marks it as a draft.
+      parameters:
+      - description: Withdraw application request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SubmitExistingApplicationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Application withdrawn successfully
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "400":
+          description: Invalid request or application cannot be withdrawn
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized, user ID not found in context
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Application not found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Failed to withdraw application
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BasicAuth: []
+      summary: Withdraw application
+      tags:
+      - Applications
+  /schemes:
+    get:
+      consumes:
+      - application/json
+      description: Fetch available schemes with pagination and filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Scheme name
+        example: Scholar Scheme
+        in: query
+        name: name
+        type: string
+      - description: Scheme status
+        example: upcoming
+        in: query
+        name: status
+        type: string
+      - description: Minimum amount
+        example: 1000
+        in: query
+        name: min_amount
+        type: number
+      - description: Maximum amount
+        example: 5000
+        in: query
+        name: max_amount
+        type: number
+      - description: Start after date (RFC3339 format)
+        example: "2023-01-01T00:00:00Z"
+        in: query
+        name: start_after
+        type: string
+      - description: End before date (RFC3339 format)
+        example: "2023-12-31T23:59:59Z"
+        in: query
+        name: end_before
+        type: string
+      - description: Eligible gender
+        in: query
+        name: gender
+        type: string
+      - description: Academic qualification
+        in: query
+        name: academic_qualification
+        type: string
+      - description: Income limit
+        in: query
+        name: income_limit
+        type: number
+      - description: Category
+        in: query
+        name: category
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SchemeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get Schemes with pagination and filtering
+      tags:
+      - scheme
+  /schemes/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a specific scheme by its ID
+      parameters:
+      - description: Scheme ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Scheme'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get Scheme By ID
+      tags:
+      - scheme
+  /schemes/{id}/applications:
+    get:
+      consumes:
+      - application/json
+      description: Get all the applications for a scheme by its ID
+      parameters:
+      - description: Scheme ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Application status
+        example: submitted
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get all the applications for a scheme
+      tags:
+      - scheme
+  /schemes/{id}/status:
+    get:
+      consumes:
+      - application/json
+      description: Get the current status of a scheme by its ID
+      parameters:
+      - description: Scheme ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get Scheme Status
+      tags:
+      - scheme
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user with username and password
+      parameters:
+      - description: User create payload
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - users
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"
